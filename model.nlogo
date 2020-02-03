@@ -1,9 +1,11 @@
 breed [securities security]
 breed [criminals criminal]
 breed [passengers passenger]
+breed [trains train]
 globals [platform-size track-size stairs-size]
 passengers-own [objective objective-number]
 patches-own [patch-type number]
+trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick]
 
 
 to move-towards-the-stairs [person]
@@ -14,7 +16,6 @@ to move-towards-the-stairs [person]
 end
 
 to move-along-corridor [person]
-
   ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[
     ask person [
       print person
@@ -57,6 +58,7 @@ end
 to change-platform-step [person]
   let p-num [number] of patch-here
   let p-type [patch-type] of patch-here
+
   ifelse p-type = "platform"  [
     ifelse (p-num != objective-number) [
       ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [
@@ -72,9 +74,93 @@ to change-platform-step [person]
   [if p-type = "corridor" [
      move-along-corridor person
 ]]]
+end
+
+to leaving_train_move
+  ask trains with [leaving = true][
+    forward 1]
+end
+
+to check_train_leave
+  ask trains with [arriving = false][
+    if ticks - stop-tick > train-hold-time [
+      set leaving true
+    ]
+  ]
 
 
 end
+to continue_arriving [line]
+  let added false
+  ask trains with [arriving = true and train-line-number = line] [
+   forward  1
+   let p-ahead patch-ahead 10
+    if p-ahead = nobody or [patch-type] of p-ahead = "corridor" [
+      ask trains with [arriving = true and train-line-number = line][
+        set arriving false
+        set stop-tick ticks ]]
+
+    ;]]
+  ]
+
+  ask trains with [arriving  = true and train-line-number = line][
+    let head heading - 180
+   carefully [
+      let patch-behind patch-at-heading-and-distance head 2
+      if not added and current-carriages < max-carriages and not any? trains-on patch-behind and [patch-type] of patch-behind = "line" [
+       hatch 1 [
+          bk 2
+        ]
+      set added true
+  ]][ print "no room"]]
+
+  if added[
+  ask trains with [arriving  = true and train-line-number = line][
+      set current-carriages current-carriages + 1
+        ]
+      ]
+
+
+
+
+
+end
+
+
+to train_arrive [line_number no_carriages]
+    let start_x 0
+    let start_y 0
+    let head 0
+    ifelse (line_number mod 2 = 0)[
+      set start_x max [pxcor] of patches with [patch-type = "line" and number = line_number]
+      set start_x start_x - 2
+      set start_y max [pycor] of patches with [patch-type = "line" and number = line_number]
+      set head 180
+
+
+    ][
+       set start_x min [pxcor] of patches with [patch-type = "line" and number = line_number]
+       set start_y min [pycor] of patches with [patch-type = "line" and number = line_number]]
+       set start_x start_x + 1
+       ask patch start_x  start_y [
+       sprout-trains 1 [
+        set train-line-number  line_number
+        set max-carriages no_carriages
+        set current-carriages 0
+        set arriving true
+        set leaving false
+        set shape "truck"
+        set heading head
+        set size 2
+      ]
+         ]
+
+
+
+end
+
+
+
 to build-platform [patch-selected platform-number startx endx]
   ask patch-selected [
     if pxcor >= startx and pxcor <= endx [
@@ -127,8 +213,13 @@ to go
     ][
       move-around-randomly self
     ]
-
   ]
+    let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true]
+    foreach arriving-lines [ ? -> continue_arriving ? ]
+    check_train_leave
+    leaving_train_move
+
+
   tick-advance 1
 end
 
@@ -213,12 +304,12 @@ NIL
 1
 
 BUTTON
-94
-148
-214
-181
-NIL
-train_arrive\n
+16
+160
+117
+193
+train_arrive
+train_arrive train_arrive_line_no train_carriages\n
 NIL
 1
 T
@@ -236,7 +327,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -245,6 +336,39 @@ NIL
 NIL
 NIL
 1
+
+INPUTBOX
+17
+33
+127
+93
+train_arrive_line_no
+2.0
+1
+0
+Number
+
+INPUTBOX
+15
+204
+115
+264
+train-hold-time
+10.0
+1
+0
+Number
+
+INPUTBOX
+17
+96
+115
+156
+train_carriages
+10.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
