@@ -5,7 +5,7 @@ breed [trains train]
 globals [platform-size track-size stairs-size]
 passengers-own [objective objective-number]
 patches-own [patch-type number]
-trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick]
+trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 
 
 to move-towards-the-stairs [person]
@@ -41,9 +41,10 @@ end
 
 to move-around-randomly [person]
   let n objective-number
+  carefully [
   if ticks mod 5 = 0 [
     set heading towards one-of patches with [patch-type = "platform" and number = n] ]
-  carefully [
+
   if [patch-type] of patch-ahead 1 != "line" [
     forward 1
   ]][
@@ -54,6 +55,33 @@ to move-around-randomly [person]
 end
 
 
+to board-train [person]
+  let line objective-number
+  ifelse any? trains with [train-line-number = line and arriving = false and leaving = false][
+
+    let nearest min-one-of trains with [train-line-number = line] [distance myself]
+    facexy  xcor  [pycor] of nearest
+    if abs (ycor - [pycor] of nearest) <= 2[
+      face nearest
+    ]
+
+    forward 1
+    if any? trains in-radius 2[
+
+    ask trains in-radius 2[
+      set passenger-count passenger-count + 1
+      set label passenger-count
+      ]
+     die
+  ]
+  ][
+
+    move-around-randomly person
+  ]
+
+
+end
+
 
 to change-platform-step [person]
   let p-num [number] of patch-here
@@ -63,10 +91,12 @@ to change-platform-step [person]
     ifelse (p-num != objective-number) [
       ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [
         move-around-randomly person
+        set objective "board-train"
       ][
     move-towards-the-stairs person
     ]][
       move-around-randomly person
+      set objective "board-train"
     ]
   ][ ifelse p-type = "stairs" [
      move-along-corridor person
@@ -78,7 +108,13 @@ end
 
 to leaving_train_move
   ask trains with [leaving = true][
-    forward 1]
+    forward 1
+    if (ycor >= max-pycor or ycor <= max-pycor * 0.1)[
+     die
+    ]
+  ]
+
+
 end
 
 to check_train_leave
@@ -87,9 +123,26 @@ to check_train_leave
       set leaving true
     ]
   ]
+end
+
+
+to arrive [t]
+ set arriving false
+ set stop-tick ticks
+ let coming-off random passenger-count
+ ask min-one-of (patches with [patch-type = "platform"]) [distance myself][
+
+  sprout-passengers coming-off [
+     set shape "person"
+     set color blue
+     set objective-number (random 4) + 1
+  ]]
+  set passenger-count passenger-count - coming-off
+  set label passenger-count
 
 
 end
+
 to continue_arriving [line]
   let added false
   ask trains with [arriving = true and train-line-number = line] [
@@ -97,8 +150,9 @@ to continue_arriving [line]
    let p-ahead patch-ahead 10
     if p-ahead = nobody or [patch-type] of p-ahead = "corridor" [
       ask trains with [arriving = true and train-line-number = line][
-        set arriving false
-        set stop-tick ticks ]]
+        arrive myself
+        ]
+    ]
 
     ;]]
   ]
@@ -109,6 +163,8 @@ to continue_arriving [line]
       let patch-behind patch-at-heading-and-distance head 2
       if not added and current-carriages < max-carriages and not any? trains-on patch-behind and [patch-type] of patch-behind = "line" [
        hatch 1 [
+          set passenger-count random 5
+          set label passenger-count
           bk 2
         ]
       set added true
@@ -147,11 +203,13 @@ to train_arrive [line_number no_carriages]
         set train-line-number  line_number
         set max-carriages no_carriages
         set current-carriages 0
+        set passenger-count (random 5)
         set arriving true
         set leaving false
         set shape "truck"
         set heading head
         set size 2
+        set label passenger-count
       ]
          ]
 
@@ -211,7 +269,7 @@ to go
     ifelse p-num != objective-number or p-type != "platform" [
    change-platform-step self
     ][
-      move-around-randomly self
+      board-train self
     ]
   ]
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true]
@@ -327,7 +385,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -343,7 +401,7 @@ INPUTBOX
 127
 93
 train_arrive_line_no
-2.0
+1.0
 1
 0
 Number
@@ -354,7 +412,7 @@ INPUTBOX
 115
 264
 train-hold-time
-10.0
+20.0
 1
 0
 Number
@@ -365,7 +423,7 @@ INPUTBOX
 115
 156
 train_carriages
-10.0
+3.0
 1
 0
 Number
