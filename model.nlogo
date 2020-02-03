@@ -3,7 +3,7 @@ breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size]
-passengers-own [objective objective-number]
+passengers-own [objective objective-number wants-to-exit]
 patches-own [patch-type number]
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 
@@ -18,7 +18,7 @@ end
 to move-along-corridor [person]
   ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[
     ask person [
-      print person
+
      set heading 0
      forward 2
     ]
@@ -57,7 +57,7 @@ end
 
 to board-train [person]
   let line objective-number
-  ifelse any? trains with [train-line-number = line and arriving = false and leaving = false][
+
 
     let nearest min-one-of trains with [train-line-number = line] [distance myself]
     facexy  xcor  [pycor] of nearest
@@ -73,11 +73,7 @@ to board-train [person]
       set label passenger-count
       ]
      die
-  ]
-  ][
-
-    move-around-randomly person
-  ]
+]
 
 
 end
@@ -135,7 +131,7 @@ to arrive [t]
   sprout-passengers coming-off [
      set shape "person"
      set color blue
-     set objective-number (random 4) + 1
+     set-objective self
   ]]
   set passenger-count passenger-count - coming-off
   set label passenger-count
@@ -217,6 +213,14 @@ to train_arrive [line_number no_carriages]
 
 end
 
+to build-entrance
+  ask patches with [(pxcor < 2 or pxcor > (max-pycor - 2)) and abs(pycor - max-pycor / 2) < 3][
+        set pcolor black
+        set patch-type "entrance"
+        ifelse pxcor < 2[
+      set number 1][set number 4]
+  ]
+end
 
 
 to build-platform [patch-selected platform-number startx endx]
@@ -262,21 +266,60 @@ to set-up-station
   ]
 end
 
+to try-and-exit [person p-num]
+        ifelse any? patches with [patch-type = "entrance"] in-radius 2[
+       die
+
+      ][
+        print (person)
+        print(p-num)
+        face min-one-of patches with [patch-type = "entrance" and number = p-num] [distance myself]
+
+        forward 1]
+end
+
+to add-new-passengers
+  if (ticks mod ticks-per-arrival = 0)[
+    let no-entering (random average-arrival-number) + 1
+    ask n-of no-entering patches with [patch-type = "entrance"][
+     sprout-passengers 1 [
+     set shape "person"
+     set color white
+     set objective-number (random 4) + 1
+     set wants-to-exit false
+    ]]
+  ]
+end
+
 to go
   ask passengers[
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
     ifelse p-num != objective-number or p-type != "platform" [
-   change-platform-step self
-    ][
-      board-train self
+       ifelse p-type = "entrance" and not wants-to-exit[
+        move-around-randomly self
+      ]
+      [
+       change-platform-step self
+    ]][
+
+      let line objective-number
+      ifelse any? trains with [train-line-number = line and arriving = false and leaving = false][
+        board-train self
+      ][
+           move-around-randomly self
+      ]]
+
+    if wants-to-exit and p-num = objective-number and p-type != "corridor"[
+      try-and-exit self p-num
+      ]
     ]
-  ]
+
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true]
     foreach arriving-lines [ ? -> continue_arriving ? ]
     check_train_leave
     leaving_train_move
-
+    add-new-passengers
 
   tick-advance 1
 end
@@ -296,12 +339,27 @@ to set-up-globals
   set stairs-size max-pycor * 0.1
 end
 
+to set-objective [person]
+  let rand random-float 1
+     ifelse rand < 0.2[
+      set color pink
+      set wants-to-exit true
+      ifelse rand < 0.1[
+          set objective-number 1][set objective-number 4]
+      ][
+       set wants-to-exit false
+        set objective-number (random 4) + 1
+      ]
+
+end
+
 to init-people [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[
     sprout-passengers 1 [
      set shape "person"
      set color white
-     set objective-number (random 4) + 1
+     set-objective self
+
     ]
     ]
 end
@@ -313,6 +371,7 @@ to set-up
   reset
   set-up-globals
   set-up-station
+  build-entrance
   init-people 10
 
 end
@@ -401,7 +460,7 @@ INPUTBOX
 127
 93
 train_arrive_line_no
-1.0
+2.0
 1
 0
 Number
@@ -424,6 +483,39 @@ INPUTBOX
 156
 train_carriages
 3.0
+1
+0
+Number
+
+MONITOR
+673
+16
+816
+61
+Passengers @ station
+count passengers
+17
+1
+11
+
+INPUTBOX
+672
+102
+821
+162
+ticks-per-arrival
+50.0
+1
+0
+Number
+
+INPUTBOX
+673
+169
+822
+229
+average-arrival-number
+5.0
 1
 0
 Number
