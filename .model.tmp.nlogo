@@ -179,6 +179,7 @@ to continue_arriving [line]
 end
 
 
+
 to train_arrive [line_number no_carriages]
     let start_x 0
     let start_y 0
@@ -264,9 +265,6 @@ to set-up-station
     build-line self 3 (2 * platform-size + 2 * track-size) (2 * platform-size + 3 * track-size)
     build-line self 4 (2 * platform-size + 3 * track-size) (2 * platform-size + 4 * track-size)
   ]
-end
-
-to set-up-security
 end
 
 to try-and-exit [person p-num]
