@@ -6,6 +6,7 @@ breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen] ; features that passengers can be given
+securities-own [objective objective-number at-platform moving] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 
@@ -147,7 +148,6 @@ to update-carriage-count [added line]
       set current-carriages current-carriages + 1
         ]
       ]
-
 end
 
 to add_carriages [line]
@@ -215,9 +215,6 @@ to train_arrive [line_number no_carriages] ; what line and how many carriages
         set label passenger-count ; lets label the number of passengers on the carriage
       ]
          ]
-
-
-
 end
 
 ; building the station entrance and exit
@@ -316,12 +313,12 @@ to go ; the main function called with each tick
   ask passengers[
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
+
     let v [visibility] of patch-here
     ifelse v = true[
       set visible true
       set seen true
     ][set visible false]
-
     if seen != true [set seen false]
 
     ifelse p-num != objective-number or p-type != "platform" [ ; if we are not at the right platform or not on a platform
@@ -343,6 +340,22 @@ to go ; the main function called with each tick
     ]
     ]
 
+  ask securities[
+
+    let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here
+
+    ifelse p-num != objective-number or p-type != "platform" [
+
+      change-platform-step self
+    ][
+      set heading random (1) - 20
+      forward 1
+    ]
+
+  ]
+
+
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
     foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
     check_train_leave ; check if any of the trains are due to leave
@@ -362,6 +375,8 @@ end
 
 ; creates an objective for a passenger leaving a train (arriving in the station)
 to set-objective [person]
+
+  if [breed] of person = passengers[
   let rand random-float 1
      ifelse rand < 0.2[  ; if the random number is less than 2 then they are wanting to leave
       set color pink ; just to see them
@@ -372,6 +387,8 @@ to set-objective [person]
        set wants-to-exit false
         set objective-number (random 4) + 1
       ]
+  ]
+  if [breed] of person = securities[set objective-number (random 4) + 1]
 
 end
 
@@ -386,6 +403,17 @@ to init-people [number-to-place]
     ]
 end
 
+to init-security [number-to-place]
+  ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
+    sprout-securities 1 [
+     set shape "person"
+     set color yellow
+     set-objective self
+    ]
+    ]
+end
+
+
 
 to set-up
 
@@ -394,6 +422,7 @@ to set-up
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
+  init-security 3
 
 end
 @#$#@#$#@
@@ -503,7 +532,7 @@ INPUTBOX
 115
 156
 train_carriages
-3.0
+5.0
 1
 0
 Number
