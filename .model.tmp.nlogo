@@ -1,11 +1,13 @@
 extensions [array]
 
+breed [cameras camera]
 breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen] ; features that passengers can be given
+cameras-own [fov dis]
 securities-own [objective objective-number at-platform moving] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
@@ -55,7 +57,16 @@ to move-around-randomly [person] ; temp funciton where we just wiggle around a b
   ]][
    back 1
   ]
+end
 
+to stroll [person] ; temp funciton where we just wiggle around a bit
+  let n objective-number
+  carefully [
+  if [patch-type] of patch-ahead 1 != "line" [
+    forward 1
+  ]][
+   back 2
+  ]
 
 end
 
@@ -277,12 +288,43 @@ to set-up-station
   build-cameras
 end
 
+to create-camera [field dist x y head]
+
+  create-cameras 1 [ set ycor y set xcor x set heading head set fov field set dis dist]
+
+end
+
+to add-cameras
+
+  create-camera   65 1 0 max-pycor 135
+
+  create-camera   65 10 0 stairs-size 45
+
+  create-camera   65 10 max-pxcor stairs-size 315
+
+  create-camera   65 10 max-pxcor max-pycor 225
+
+end
 
 to build-cameras
-  ask patches with [ ( (patch-type = "platform") and ( (pxcor > 1 and pxcor < max-pxcor - 1) and (pycor < max-pycor - 2 and pycor > stairs-size + 1) ) ) or (patch-type = "entrance")][
-        set pcolor 6
-        set visibility true
+
+  add-cameras
+
+   ask cameras[
+    let d dis
+    let f fov
+   ask patches in-cone d f [
+
+      let col pcolor
+      let v [visibility] of patches
+
+      if v != true[
+       set pcolor pcolor + 2
+       set visibility true
+    ]
   ]
+  ]
+
 end
 
 ; this is called when we are near the entrance and want to leave
@@ -308,6 +350,7 @@ to add-new-passengers
     ]]
   ]
 end
+
 
 to go ; the main function called with each tick
   ask passengers[
@@ -349,8 +392,7 @@ to go ; the main function called with each tick
 
       change-platform-step self
     ][
-      set heading random (1) - 20
-      forward 1
+      stroll self
     ]
 
   ]
