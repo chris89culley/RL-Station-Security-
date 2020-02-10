@@ -341,6 +341,7 @@ end
 
 
 to go ; the main function called with each tick
+
   ask passengers[
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
@@ -380,7 +381,7 @@ to go ; the main function called with each tick
 
       change-platform-step self
     ][
-      ifelse(ycor > max-pycor - 10)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
+      ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
     ]
 
   ]
