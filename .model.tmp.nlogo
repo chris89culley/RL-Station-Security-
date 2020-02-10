@@ -1,16 +1,26 @@
+<<<<<<< HEAD
 extensions [array]
 
 breed [cameras camera]
+=======
+>>>>>>> master
 breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size] ;global variables
+<<<<<<< HEAD
 passengers-own [objective objective-number wants-to-exit visible seen] ; features that passengers can be given
 cameras-own [fov dis]
 securities-own [objective objective-number at-platform moving] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
+=======
+passengers-own [objective objective-number wants-to-exit money vulnerability aesthetic] ; features that passengers can be given
+patches-own [patch-type number] ; features each of the pixels (patches) can be given
+trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
+criminals-own [ objective objective-number money wants-to-exit] ; features that criminals can be given
+>>>>>>> master
 
 
 ; sets the heading towards the nearest stair pixel and move towards it
@@ -57,6 +67,7 @@ to move-around-randomly [person] ; temp funciton where we just wiggle around a b
   ]][
    back 1
   ]
+<<<<<<< HEAD
 end
 
 to stroll [person] ; temp funciton where we just wiggle around a bit
@@ -67,6 +78,9 @@ to stroll [person] ; temp funciton where we just wiggle around a bit
   ]][
    back 2
   ]
+=======
+
+>>>>>>> master
 
 end
 
@@ -146,6 +160,13 @@ to arrive [t]
   sprout-passengers coming-off [ ; create the passengers that leave the train
      set shape "person"
      set color blue
+<<<<<<< HEAD
+=======
+     set vulnerability (abs random-normal 15 8)
+     set aesthetic (abs random-normal 30 10)
+     set money (aesthetic + random-normal 25 5)
+     set label-color black
+>>>>>>> master
      set-objective self ; set objective function called to set where they want to go
   ]]
   set passenger-count passenger-count - coming-off ; adjust the counts
@@ -159,6 +180,10 @@ to update-carriage-count [added line]
       set current-carriages current-carriages + 1
         ]
       ]
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 end
 
 to add_carriages [line]
@@ -226,13 +251,23 @@ to train_arrive [line_number no_carriages] ; what line and how many carriages
         set label passenger-count ; lets label the number of passengers on the carriage
       ]
          ]
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> master
 end
 
 ; building the station entrance and exit
 to build-entrance
   ; we want to build it in the center of the map (y-cords) on the far right and fari left
   ask patches with [(pxcor < 2 or pxcor > (max-pycor - 2)) and abs(pycor - max-pycor / 2) < 3][
+<<<<<<< HEAD
         set pcolor black
+=======
+        set pcolor orange
+>>>>>>> master
         set patch-type "entrance"
         ifelse pxcor < 2[
       set number 1][set number 4]  ; what number platform is it on
@@ -245,11 +280,19 @@ to build-platform [patch-selected platform-number startx endx]
   ask patch-selected [
     if pxcor >= startx and pxcor <= endx [
       ifelse (pycor >= min-pycor + stairs-size) [
+<<<<<<< HEAD
       set pcolor 4
       set number platform-number
       set patch-type "platform"
     ][
         set pcolor black
+=======
+      set pcolor gray
+      set number platform-number
+      set patch-type "platform"
+    ][
+        set pcolor orange
+>>>>>>> master
         set patch-type "stairs"
         set number platform-number
       ]
@@ -265,7 +308,11 @@ to build-line [patch-selected line-number startx endx]
      set number line-number
      set patch-type "line"
     ] [
+<<<<<<< HEAD
         set pcolor black
+=======
+        set pcolor orange
+>>>>>>> master
         set patch-type "corridor"
         set number line-number
       ]
@@ -285,6 +332,7 @@ to set-up-station
     build-line self 4 (2 * platform-size + 3 * track-size) (2 * platform-size + 4 * track-size)
   ]
   build-entrance
+<<<<<<< HEAD
   build-cameras
 end
 
@@ -313,6 +361,8 @@ to build-cameras
     ]
   ]
   ]
+=======
+>>>>>>> master
 end
 
 ; this is called when we are near the entrance and want to leave
@@ -334,11 +384,17 @@ to add-new-passengers
      set shape "person"
      set color white
      set objective-number (random 4) + 1 ; a random platform they want to get on
+<<<<<<< HEAD
+=======
+
+     set label-color black
+>>>>>>> master
      set wants-to-exit false ; if they have just entered they probably don't want to leave again
     ]]
   ]
 end
 
+<<<<<<< HEAD
 
 to go ; the main function called with each tick
 
@@ -353,6 +409,39 @@ to go ; the main function called with each tick
     ][set visible false]
     if seen != true [set seen false]
 
+=======
+to follow-target
+
+  ask criminals [
+    let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here
+    set objective-number [objective-number] of passenger who-to-steal ; set objective-number equal to the target victim
+    face passenger who-to-steal ; set direction towards the target victim
+    ifelse distance passenger who-to-steal > 1 [ ;if distance between the criminal and the target victim is more than 1
+      ifelse p-num != objective-number or p-type != "platform"  ; if criminal is on the wrong platform
+        [ change-platform-step self ] ; go to the platform that the victim is heading
+        [ move-around-randomly self]] ; move randomly if already on the correct platform
+        [ fd 1 ] ; move one step forwards towards the victim
+      if [pcolor] of patch-ahead 1 = red
+      [ lt 180  ;; See a red patch ahead : turn left by 180 degree
+       fd 1 ]                  ;; Otherwise, its safe to go foward.
+
+  ]
+end
+
+to steal-target [ turtle1 turtle2 ]
+  let temp [money] of turtle1 ; temp variable for consecutive pick-pocket development
+  ask turtle1 [ set money [ money ] of turtle2 ] ; set money to the same value as the victim
+  ask turtle2 [ set money 0] ; set victim's money value to zero
+end
+
+
+
+to go ; the main function called with each tick
+  ask passengers[
+    let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here
+>>>>>>> master
     ifelse p-num != objective-number or p-type != "platform" [ ; if we are not at the right platform or not on a platform
        ifelse p-type = "entrance" and not wants-to-exit[ ; if we are on the entrance but don't want to leave
         move-around-randomly self
@@ -369,6 +458,7 @@ to go ; the main function called with each tick
 
     if wants-to-exit and p-num = objective-number and p-type != "corridor"[ ; if we want to exit and are on at the right exit
       try-and-exit self p-num
+<<<<<<< HEAD
     ]
     ]
 
@@ -385,6 +475,18 @@ to go ; the main function called with each tick
     ]
 
   ]
+=======
+      ]
+    ifelse show-target-value?
+    [ set label round (aesthetic + vulnerability) ]
+    [ set label "" ]
+
+    ]
+
+  ask criminals [ follow-target
+    if distance passenger who-to-steal < 1 [ steal-target criminals passenger who-to-steal]]
+
+>>>>>>> master
 
 
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
@@ -393,6 +495,11 @@ to go ; the main function called with each tick
     leaving_train_move ; keep leaving trains leaving
     add-new-passengers ; maybe add some new passengers
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> master
   tick-advance 1 ; move time forward
 end
 
@@ -406,8 +513,11 @@ end
 
 ; creates an objective for a passenger leaving a train (arriving in the station)
 to set-objective [person]
+<<<<<<< HEAD
 
   if [breed] of person = passengers[
+=======
+>>>>>>> master
   let rand random-float 1
      ifelse rand < 0.2[  ; if the random number is less than 2 then they are wanting to leave
       set color pink ; just to see them
@@ -418,8 +528,11 @@ to set-objective [person]
        set wants-to-exit false
         set objective-number (random 4) + 1
       ]
+<<<<<<< HEAD
   ]
   if [breed] of person = securities[set objective-number (random 4) + 1]
+=======
+>>>>>>> master
 
 end
 
@@ -429,11 +542,19 @@ to init-people [number-to-place]
     sprout-passengers 1 [
      set shape "person"
      set color white
+<<<<<<< HEAD
+=======
+     set vulnerability ( abs random-normal 15 8 )
+     set aesthetic (abs random-normal 30 10)
+     set money (aesthetic + random-normal 25 5)
+     set label-color black
+>>>>>>> master
      set-objective self ; set their objective
     ]
     ]
 end
 
+<<<<<<< HEAD
 to init-security [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-securities 1 [
@@ -446,6 +567,17 @@ end
 
 
 
+=======
+to init-criminals
+  ask n-of number-of-criminals (patches with [patch-type = "platform"])[
+    sprout-criminals number-of-criminals [
+    set shape "person"
+    set color green
+    set money 0
+    ]
+   ]
+end
+>>>>>>> master
 to set-up
 
   clear-all ; resets the pixels
@@ -453,7 +585,11 @@ to set-up
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
+<<<<<<< HEAD
   init-security 1
+=======
+  init-criminals
+>>>>>>> master
 
 end
 @#$#@#$#@
@@ -485,10 +621,17 @@ ticks
 30.0
 
 BUTTON
+<<<<<<< HEAD
 138
 70
 211
 103
+=======
+135
+33
+208
+66
+>>>>>>> master
 set-up
 set-up
 NIL
@@ -519,6 +662,7 @@ NIL
 1
 
 BUTTON
+<<<<<<< HEAD
 127
 105
 190
@@ -526,6 +670,15 @@ BUTTON
 NIL
 go\n\n
 T
+=======
+140
+73
+203
+106
+NIL
+go\n\n
+NIL
+>>>>>>> master
 1
 T
 OBSERVER
@@ -533,7 +686,11 @@ NIL
 NIL
 NIL
 NIL
+<<<<<<< HEAD
 1
+=======
+0
+>>>>>>> master
 
 INPUTBOX
 17
@@ -563,7 +720,11 @@ INPUTBOX
 115
 156
 train_carriages
+<<<<<<< HEAD
 5.0
+=======
+4.0
+>>>>>>> master
 1
 0
 Number
@@ -585,7 +746,11 @@ INPUTBOX
 821
 162
 ticks-per-arrival
+<<<<<<< HEAD
 50.0
+=======
+10.0
+>>>>>>> master
 1
 0
 Number
@@ -612,6 +777,42 @@ max_passengers_on_carriages_when_created
 0
 Number
 
+<<<<<<< HEAD
+=======
+SWITCH
+829
+22
+1007
+55
+show-target-value?
+show-target-value?
+0
+1
+-1000
+
+INPUTBOX
+12
+450
+161
+510
+number-of-criminals
+1.0
+1
+0
+Number
+
+INPUTBOX
+13
+519
+162
+579
+who-to-steal
+3.0
+1
+0
+Number
+
+>>>>>>> master
 @#$#@#$#@
 ## WHAT IS IT?
 
