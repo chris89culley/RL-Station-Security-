@@ -364,20 +364,7 @@ to add-new-passengers
 end
 
 
-to go ; the main function called with each tick
 
-  ask passengers[
-    let p-type [patch-type] of patch-here
-    let p-num [number] of patch-here
-
-    let v [visibility] of patch-here
-    ifelse v = true[
-      set visible true
-      set seen true
-    ][set visible false]
-    if seen != true [set seen false]
-
-=======
 to follow-target
 
   ask criminals [
@@ -398,6 +385,7 @@ to follow-target
 end
 
 to steal-target [ turtle1 turtle2 ]
+
   let temp [money] of turtle1 ; temp variable for consecutive pick-pocket development
   ask turtle1 [ set money [ money ] of turtle2 ] ; set money to the same value as the victim
   ask turtle2 [ set money 0] ; set victim's money value to zero
@@ -409,6 +397,12 @@ to go ; the main function called with each tick
   ask passengers[
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
+    let v [visibility] of patch-here
+    ifelse v = true[
+      set visible true
+      set seen true
+    ][set visible false]
+    if seen != true [set seen false]
     ifelse p-num != objective-number or p-type != "platform" [ ; if we are not at the right platform or not on a platform
        ifelse p-type = "entrance" and not wants-to-exit[ ; if we are on the entrance but don't want to leave
         move-around-randomly self
@@ -427,7 +421,14 @@ to go ; the main function called with each tick
       try-and-exit self p-num
 
     ]
+
+
+    ifelse show-target-value?
+    [ set label round (aesthetic + vulnerability) ]
+    [ set label "" ]
+
     ]
+
 
   ask securities[
 
@@ -443,12 +444,6 @@ to go ; the main function called with each tick
 
   ]
 
-      ]
-    ifelse show-target-value?
-    [ set label round (aesthetic + vulnerability) ]
-    [ set label "" ]
-
-    ]
 
   ask criminals [ follow-target
     if distance passenger who-to-steal < 1 [ steal-target criminals passenger who-to-steal]]
@@ -548,8 +543,6 @@ to set-up
   init-security 1
 
   init-criminals
-
-
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -580,12 +573,10 @@ ticks
 30.0
 
 BUTTON
-
 138
 70
 211
 103
-
 set-up
 set-up
 NIL
@@ -616,15 +607,13 @@ NIL
 1
 
 BUTTON
-
-140
-73
-203
-106
+127
+105
+190
+138
 NIL
 go\n\n
 NIL
-
 1
 T
 OBSERVER
@@ -632,9 +621,7 @@ NIL
 NIL
 NIL
 NIL
-
 1
-
 
 INPUTBOX
 17
@@ -642,7 +629,7 @@ INPUTBOX
 127
 93
 train_arrive_line_no
-4.0
+2.0
 1
 0
 Number
@@ -664,9 +651,7 @@ INPUTBOX
 115
 156
 train_carriages
-
-4.0
-
+3.0
 1
 0
 Number
@@ -688,9 +673,7 @@ INPUTBOX
 821
 162
 ticks-per-arrival
-
 50.0
-
 1
 0
 Number
@@ -707,33 +690,32 @@ average-arrival-number
 Number
 
 INPUTBOX
-672
-233
-821
-293
-max_passengers_on_carriages_when_created
-5.0
+13
+273
+118
+333
+who-to-steal
+7.0
 1
 0
 Number
 
-
 SWITCH
-829
-22
-1007
-55
+671
+234
+830
+267
 show-target-value?
 show-target-value?
-0
+1
 1
 -1000
 
 INPUTBOX
-12
-450
-161
-510
+683
+352
+799
+412
 number-of-criminals
 1.0
 1
@@ -741,12 +723,12 @@ number-of-criminals
 Number
 
 INPUTBOX
-13
-519
-162
-579
-who-to-steal
-3.0
+556
+460
+785
+520
+max_passengers_on_carriages_when_created
+5.0
 1
 0
 Number
@@ -1093,7 +1075,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
