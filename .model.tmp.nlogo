@@ -296,7 +296,7 @@ end
 
 to add-cameras
 
-  create-camera   65 1 0 max-pycor 135
+  create-camera   65 10 0 max-pycor 135
 
   create-camera   65 10 0 stairs-size 45
 
