@@ -289,42 +289,30 @@ to set-up-station
 end
 
 to create-camera [field dist x y head]
-
   create-cameras 1 [ set ycor y set xcor x set heading head set fov field set dis dist]
-
 end
 
 to add-cameras
-
   create-camera   65 10 0 max-pycor 135
-
   create-camera   65 10 0 stairs-size 45
-
   create-camera   65 10 max-pxcor stairs-size 315
-
   create-camera   65 10 max-pxcor max-pycor 225
-
 end
 
 to build-cameras
-
   add-cameras
-
    ask cameras[
     let d dis
     let f fov
    ask patches in-cone d f [
-
       let col pcolor
       let v [visibility] of patches
-
       if v != true[
        set pcolor pcolor + 2
        set visibility true
     ]
   ]
   ]
-
 end
 
 ; this is called when we are near the entrance and want to leave
@@ -392,7 +380,7 @@ to go ; the main function called with each tick
 
       change-platform-step self
     ][
-      stroll self
+      ifelse(ycor > max-pycor - 10)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
     ]
 
   ]
@@ -464,7 +452,7 @@ to set-up
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
-  init-security 3
+  init-security 1
 
 end
 @#$#@#$#@
