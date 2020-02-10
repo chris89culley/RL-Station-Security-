@@ -301,9 +301,7 @@ to add-new-passengers
      set shape "person"
      set color white
      set objective-number (random 4) + 1 ; a random platform they want to get on
-     set vulnerability ( abs random-normal 15 8 )
-     set aesthetic (abs random-normal 30 10)
-     set money (aesthetic + random-normal 25 5)
+
      set label-color black
      set wants-to-exit false ; if they have just entered they probably don't want to leave again
     ]]
@@ -506,7 +504,7 @@ BUTTON
 106
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -621,7 +619,7 @@ INPUTBOX
 162
 579
 who-to-steal
-4.0
+3.0
 1
 0
 Number
