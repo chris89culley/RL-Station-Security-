@@ -173,6 +173,7 @@ to update-carriage-count [added line]
 
 end
 
+
 to add_carriages [line]
   let added false ; have we added an extra carriage in this tick
     ask trains with [arriving  = true and train-line-number = line][
@@ -257,6 +258,26 @@ to build-entrance
 end
 
 
+to build_benches [x_cordinate]
+  print x_cordinate
+  ask patches with [pxcor = round (x_cordinate) and patch-type = "platform"  and pycor < max-pycor - 5][
+
+    carefully[
+    if pycor mod 25 = 0[
+      set pcolor green
+      ask patch-at 0 1 [
+        set pcolor green
+      ]
+      ask patch-at 0 2[
+        set pcolor green
+      ]
+    ]][print "oor"]
+
+  ]
+
+end
+
+
 ; building a platform and connecting stairs
 to build-platform [patch-selected platform-number startx endx]
   ask patch-selected [
@@ -273,6 +294,8 @@ to build-platform [patch-selected platform-number startx endx]
         set number platform-number
       ]
   ]]
+
+
 end
 
 ; building the train line out of patches
@@ -293,10 +316,18 @@ to build-line [patch-selected line-number startx endx]
   ]]
 end
 
+to build-bench-set
+  build_benches (platform-size / 3)
+  build_benches (platform-size + track-size) + platform-size
+  build_benches (3 * platform-size + 2 * track-size) + platform-size / 3
+end
+
+
 ; build the train station out of the patches
 to set-up-station
   ask patches [
     build-platform self 4 (max-pxcor - platform-size) max-pxcor ; self refers the the particular patch (pixel)
+
     build-platform self 1 0 platform-size
     build-platform self 2 (platform-size + 2 * track-size)  (platform-size + 3 * track-size)
     build-platform self 3 (platform-size + 3 * track-size) (platform-size + 4 * track-size)
@@ -306,6 +337,7 @@ to set-up-station
     build-line self 4 (2 * platform-size + 3 * track-size) (2 * platform-size + 4 * track-size)
   ]
   build-entrance
+  build-bench-set
 
   build-cameras
 end
