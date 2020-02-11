@@ -764,7 +764,7 @@ INPUTBOX
 1158
 72
 number_of_carriages_train_1
-5.0
+10.0
 1
 0
 Number
@@ -775,7 +775,7 @@ INPUTBOX
 1158
 145
 number_of_carriages_train_2
-5.0
+8.0
 1
 0
 Number
@@ -786,7 +786,7 @@ INPUTBOX
 1157
 212
 number_of_carriages_train_3
-5.0
+12.0
 1
 0
 Number
@@ -797,7 +797,7 @@ INPUTBOX
 1157
 278
 number_of_carriages_train_4
-5.0
+15.0
 1
 0
 Number
