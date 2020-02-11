@@ -1,4 +1,3 @@
-
 extensions [array]
 
 breed [cameras camera]
@@ -187,7 +186,9 @@ to add_carriages [line]
           bk 2 ; move back two
         ]
       set added true ; we've added something
-  ]][ print "no room"]]
+    ]][ print "no room"]
+
+]
 
   update-carriage-count added line
 
@@ -230,7 +231,7 @@ to train_arrive [line_number no_carriages] ; what line and how many carriages
         set train-line-number  line_number
         set max-carriages no_carriages
         set current-carriages 0
-        set passenger-count (random 5)
+        set passenger-count max_passengers_on_carriages_when_created
         set arriving true
         set leaving false
         set shape "truck"
@@ -349,6 +350,7 @@ end
 
 ; adds new passengers from the entrances
 to add-new-passengers
+  print(ticks)
   if (ticks mod ticks-per-arrival = 0)[ ; we do this every 'ticks per arrival' ticks
     let no-entering (random average-arrival-number) + 1 ; randomly choose the number to enter
     ask n-of no-entering patches with [patch-type = "entrance"][  ; ask n of the patches that are entrance to create a passenger
@@ -457,9 +459,26 @@ to go ; the main function called with each tick
     leaving_train_move ; keep leaving trains leaving
     add-new-passengers ; maybe add some new passengers
 
-
+  train-arrivals-check
   tick-advance 1 ; move time forward
 end
+
+to train-arrivals-check
+  if ticks mod train_1_arrival_tick = 0 [
+    train_arrive 1 number_of_carriages_train_1
+  ]
+  if ticks mod train_2_arrival_tick = 0 [
+    train_arrive 2 number_of_carriages_train_2
+  ]
+    if ticks mod train_3_arrival_tick = 0 [
+    train_arrive 3 number_of_carriages_train_3
+  ]
+    if ticks mod train_4_arrival_tick = 0 [
+    train_arrive 4 number_of_carriages_train_4
+  ]
+
+end
+
 
 
 ; initialises the global variabels
@@ -536,6 +555,7 @@ to set-up
 
   clear-all ; resets the pixels
   RESET-TICKS ; resets time
+  tick-advance 1
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
@@ -548,11 +568,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-647
-448
+978
+779
 -1
 -1
-13.0
+10.0
 1
 10
 1
@@ -563,9 +583,9 @@ GRAPHICS-WINDOW
 0
 1
 0
-32
+75
 0
-32
+75
 0
 0
 1
@@ -590,30 +610,13 @@ NIL
 1
 
 BUTTON
-16
-160
-117
-193
-train_arrive
-train_arrive train_arrive_line_no train_carriages\n
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
 127
 105
 190
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -622,17 +625,6 @@ NIL
 NIL
 NIL
 1
-
-INPUTBOX
-17
-33
-127
-93
-train_arrive_line_no
-2.0
-1
-0
-Number
 
 INPUTBOX
 15
@@ -640,27 +632,16 @@ INPUTBOX
 115
 264
 train-hold-time
-20.0
-1
-0
-Number
-
-INPUTBOX
-17
-96
-115
-156
-train_carriages
-3.0
+30.0
 1
 0
 Number
 
 MONITOR
-673
-16
-816
-61
+1160
+412
+1303
+457
 Passengers @ station
 count passengers
 17
@@ -668,21 +649,21 @@ count passengers
 11
 
 INPUTBOX
-672
-102
-821
-162
+992
+350
+1141
+410
 ticks-per-arrival
-50.0
+20.0
 1
 0
 Number
 
 INPUTBOX
-673
-169
-822
-229
+1159
+348
+1308
+408
 average-arrival-number
 5.0
 1
@@ -695,39 +676,127 @@ INPUTBOX
 118
 333
 who-to-steal
-7.0
+0.0
 1
 0
 Number
 
 SWITCH
-671
-234
-830
-267
+991
+413
+1150
+446
 show-target-value?
 show-target-value?
-1
+0
 1
 -1000
 
 INPUTBOX
-683
-352
-799
-412
+991
+449
+1107
+509
 number-of-criminals
-1.0
+0.0
 1
 0
 Number
 
 INPUTBOX
-556
-460
-785
-520
+994
+285
+1223
+345
 max_passengers_on_carriages_when_created
+10.0
+1
+0
+Number
+
+INPUTBOX
+1164
+12
+1313
+72
+train_1_arrival_tick
+150.0
+1
+0
+Number
+
+INPUTBOX
+1163
+81
+1312
+141
+train_2_arrival_tick
+180.0
+1
+0
+Number
+
+INPUTBOX
+1163
+148
+1312
+208
+train_3_arrival_tick
+175.0
+1
+0
+Number
+
+INPUTBOX
+1163
+216
+1312
+276
+train_4_arrival_tick
+160.0
+1
+0
+Number
+
+INPUTBOX
+997
+12
+1158
+72
+number_of_carriages_train_1
+5.0
+1
+0
+Number
+
+INPUTBOX
+996
+85
+1158
+145
+number_of_carriages_train_2
+5.0
+1
+0
+Number
+
+INPUTBOX
+996
+152
+1157
+212
+number_of_carriages_train_3
+5.0
+1
+0
+Number
+
+INPUTBOX
+996
+218
+1157
+278
+number_of_carriages_train_4
 5.0
 1
 0
