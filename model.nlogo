@@ -1,28 +1,42 @@
 extensions [array]
 
 breed [cameras camera]
-
+breed [baggages baggage]
 breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size] ;global variables
-passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic] ; features that passengers can be given
+passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving] ; features that security can be given
+securities-own [objective objective-number at-platform moving has-baggage carrying-baggage] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit has-baggage carrying-baggage] ; features that criminals can be given
 
 
-
+to move-forward [x person]
+  forward x
+  let myx xcor
+  let myy ycor
+  let carrying carrying-baggage
+  if carrying-baggage[
+     ask link-neighbors [
+         set xcor myx
+         set ycor myy
+  ]
+  ]
+end
 
 ; sets the heading towards the nearest stair pixel and move towards it
 to move-towards-the-stairs [person]
     ask person [
      let target-patch min-one-of (patches with [patch-type = "stairs"]) [distance myself] ;find the nearest stair pixel
      set heading towards  target-patch ; look at it
-    forward 1] ; move to it
+     move-forward 1 myself
+
+
+  ] ; move to it
 end
 
 
@@ -31,7 +45,7 @@ to move-along-corridor [person]
   ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[ ; if we have arrived at the correct stairs
     ask person [
      set heading 0
-     forward 2
+      move-forward 2 myself
     ]
   ][  ; else of the if
   ask person [
@@ -39,11 +53,11 @@ to move-along-corridor [person]
     let x [pxcor] of one-of patches with [patch-type = "platform" and number = num ] ; pixel of the platform we want to get to
     ifelse x > xcor [  ; face and go right
        set heading 90
-       forward 1
+       move-forward 1 myself
     ][ ; face and go left (this is the else part of the if)
 
       set heading -90
-      forward 1
+        move-forward 1 myself
     ]
 
   ]]
@@ -57,7 +71,7 @@ to move-around-randomly [person] ; temp funciton where we just wiggle around a b
     set heading towards one-of patches with [patch-type = "platform" and number = n] ]
 
   if [patch-type] of patch-ahead 1 != "line" [
-    forward 1
+    move-forward 1 myself
   ]][
    back 1
   ]
@@ -68,9 +82,9 @@ to stroll [person] ; temp funciton where we just wiggle around a bit
   let n objective-number
   carefully [
   if [patch-type] of patch-ahead 1 != "line" [
-    forward 1
+    move-forward 1 myself
   ]][
-   back 2
+   move-forward -2 person
   ]
 
 
@@ -85,12 +99,15 @@ to board-train [person]
       face nearest
     ]
 
-    forward 1
+    move-forward 1 person
     if any? trains in-radius 2[  ; are we really close to the train?
     ask trains in-radius 2[  ; if yes, get on it and add to the count of the carriage
       set passenger-count passenger-count + 1
       set label passenger-count
       ]
+     ask link-neighbors [
+     die  ; remove the suitcase
+    ]
      die ; this just removes the passenger from the game
 ]
 
@@ -149,16 +166,25 @@ to arrive [t]
  set stop-tick ticks ; grab the tick count so we can know how long we've been here
  let coming-off random passenger-count ; a random number of passengers that we want to leave
  ask min-one-of (patches with [patch-type = "platform"]) [distance myself][ ; get patches near the train where the passengers can disambark to
+
   sprout-passengers coming-off [ ; create the passengers that leave the train
      set shape "person"
      set color blue
-
      set vulnerability (abs random-normal 15 8)
      set aesthetic (abs random-normal 30 10)
      set money (aesthetic + random-normal 25 5)
      set label-color black
      set-objective self ; set objective function called to set where they want to go
-  ]]
+     set has-baggage (random-float 1 > percentage_with_bag)
+     set carrying-baggage has-baggage
+     let noob myself
+     ask patch-here [
+       link-baggage self noob
+      ]
+  ]
+
+
+  ]
   set passenger-count passenger-count - coming-off ; adjust the counts
   set label passenger-count ; this label is the one shown on screen
 end
@@ -376,7 +402,7 @@ to try-and-exit [person p-num]
        die  ; if we are within 2 pixels of the entrance - leave (die)
       ][ ; else we face the nearest entrance (we are already at the right platform at this point) and move towards it
         face min-one-of patches with [patch-type = "entrance" and number = p-num] [distance myself]
-        forward 1]
+        move-forward 1 self]
 end
 
 
@@ -391,9 +417,13 @@ to add-new-passengers
      set color white
      set objective-number (random 4) + 1 ; a random platform they want to get on
      set label-color black
+     set has-baggage (random-float 1 > percentage_with_bag)
+     set carrying-baggage has-baggage
 
      set wants-to-exit false ; if they have just entered they probably don't want to leave again
-    ]]
+    ]
+    link-baggage self one-of passengers-here
+    ]
   ]
 end
 
@@ -410,10 +440,10 @@ to follow-target
       ifelse p-num != objective-number or p-type != "platform"  ; if criminal is on the wrong platform
         [ change-platform-step self ] ; go to the platform that the victim is heading
         [ move-around-randomly self]] ; move randomly if already on the correct platform
-        [ fd 1 ] ; move one step forwards towards the victim
+        [ move-forward 1 myself ] ; move one step forwards towards the victim
       if [pcolor] of patch-ahead 1 = red
       [ lt 180  ;; See a red patch ahead : turn left by 180 degree
-       fd 1 ]                  ;; Otherwise, its safe to go foward.
+       move-forward 1 myself ]                  ;; Otherwise, its safe to go foward.
 
   ]
 end
@@ -544,20 +574,31 @@ to set-objective [person]
 
 end
 
+to link-baggage [patch_i person]
+  carefully[
+   if [has-baggage] of person [
+    sprout-baggages 1[
+      set shape "suitcase"
+      create-links-with other turtles-here
+  ]]][print "noone there"]
+end
+
 ; creates the initial pool of passengers
 to init-people [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-passengers 1 [
      set shape "person"
      set color white
-
      set vulnerability ( abs random-normal 15 8 )
      set aesthetic (abs random-normal 30 10)
      set money (aesthetic + random-normal 25 5)
      set label-color black
-
+     set has-baggage (random-float 1 > percentage_with_bag)
+     set carrying-baggage has-baggage
      set-objective self ; set their objective
+
     ]
+    link-baggage self one-of passengers-here
     ]
 end
 
@@ -567,6 +608,8 @@ to init-security [number-to-place]
      set shape "person"
      set color yellow
      set-objective self
+     set has-baggage False
+     set  carrying-baggage False
     ]
     ]
 end
@@ -579,6 +622,8 @@ to init-criminals
     set shape "person"
     set color green
     set money 0
+    set has-baggage False
+     set  carrying-baggage False
     ]
    ]
 end
@@ -830,6 +875,17 @@ INPUTBOX
 278
 number_of_carriages_train_4
 15.0
+1
+0
+Number
+
+INPUTBOX
+991
+511
+1140
+571
+percentage_with_bag
+0.5
 1
 0
 Number
@@ -1094,6 +1150,16 @@ star
 false
 0
 Polygon -7500403 true true 151 1 185 108 298 108 207 175 242 282 151 216 59 282 94 175 3 108 116 108
+
+suitcase
+true
+0
+Rectangle -7500403 false true 60 120 240 240
+Rectangle -7500403 true true 60 120 240 240
+Rectangle -7500403 false true 105 90 120 120
+Rectangle -7500403 true true 180 90 195 120
+Rectangle -7500403 true true 105 75 195 90
+Rectangle -7500403 true true 105 90 120 120
 
 target
 false
