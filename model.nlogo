@@ -426,7 +426,7 @@ to add-new-passengers
      set color white
      set objective-number (random 4) + 1 ; a random platform they want to get on
      set label-color black
-     set has-baggage (random-float 1 > percentage_with_bag)
+     set has-baggage (random-float 1 < percentage_with_bag)
      set carrying-baggage has-baggage
 
      set wants-to-exit false ; if they have just entered they probably don't want to leave again
@@ -893,7 +893,7 @@ INPUTBOX
 1140
 571
 percentage_with_bag
-0.5
+0.2
 1
 0
 Number
