@@ -143,6 +143,9 @@ to leaving_train_move
   ask trains with [leaving = true][
     forward 1
     if (ycor >= max-pycor or ycor <= max-pycor * 0.1)[
+      ask link-neighbors[
+       die
+      ]
      die
     ]
   ]
@@ -177,8 +180,10 @@ to arrive [t]
      set-objective self ; set objective function called to set where they want to go
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
-     let noob myself
+     let noob self
      ask patch-here [
+        print "adding baggage to"
+        print noob
        link-baggage self noob
       ]
   ]
@@ -399,6 +404,10 @@ end
 ; this is called when we are near the entrance and want to leave
 to try-and-exit [person p-num]
      ifelse any? patches with [patch-type = "entrance"] in-radius 2[
+       ask link-neighbors [
+     die ; remove suitcases
+
+    ]
        die  ; if we are within 2 pixels of the entrance - leave (die)
       ][ ; else we face the nearest entrance (we are already at the right platform at this point) and move towards it
         face min-one-of patches with [patch-type = "entrance" and number = p-num] [distance myself]
@@ -571,16 +580,15 @@ to set-objective [person]
   ]
   if [breed] of person = securities[set objective-number (random 4) + 1]
 
-
 end
 
 to link-baggage [patch_i person]
-  carefully[
+
    if [has-baggage] of person [
     sprout-baggages 1[
       set shape "suitcase"
-      create-links-with other turtles-here
-  ]]][print "noone there"]
+      create-link-with person
+  ]]
 end
 
 ; creates the initial pool of passengers
