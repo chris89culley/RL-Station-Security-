@@ -378,10 +378,10 @@ to create-camera [field dist x y head]
 end
 
 to add-cameras
-  create-camera   65 10 0 max-pycor 135
-  create-camera   65 10 0 stairs-size 45
-  create-camera   65 10 max-pxcor stairs-size 315
-  create-camera   65 10 max-pxcor max-pycor 225
+  create-camera   65 1.5 * platform-size 0 max-pycor 145
+  create-camera   65 1.5 * platform-size 0 stairs-size 35
+  create-camera   65 1.5 * platform-size max-pxcor stairs-size 325
+  create-camera   65 1.5 * platform-size max-pxcor max-pycor 215
 end
 
 to build-cameras
@@ -1250,7 +1250,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
