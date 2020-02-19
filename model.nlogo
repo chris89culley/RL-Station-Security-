@@ -9,10 +9,10 @@ breed [trains train]
 globals [platform-size track-size stairs-size] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving has-baggage carrying-baggage] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit has-baggage carrying-baggage] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage] ; features that criminals can be given
 
 
 to move-forward [x person]
@@ -503,7 +503,10 @@ to go ; the main function called with each tick
     ]
 
 
+
   ask securities[
+
+    look self
 
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
@@ -518,11 +521,17 @@ to go ; the main function called with each tick
   ]
 
 
-  ask criminals [ follow-target
+  ask criminals [
+
+    let v [visibility] of patch-here
+      ifelse v = true[
+        set visible true
+        set seen true
+      ][set visible false]
+    if seen != true [set seen false]
+
+    follow-target
     if distance passenger who-to-steal < 1 [ steal-target criminals passenger who-to-steal]]
-
-
-
 
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
     foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
@@ -617,11 +626,47 @@ to init-security [number-to-place]
      set color yellow
      set-objective self
      set has-baggage False
-     set  carrying-baggage False
+     set carrying-baggage False
+     set seen-list array:from-list n-values 50 [0]
     ]
     ]
 end
 
+;Starter -> give each person memory count (like 'counter' for each turtle with 'look' method), set value at memory-count%50 position of array
+
+to look [person]
+
+  let jointset (turtle-set securities criminals passengers)
+
+  ask person[
+   let my-list seen-list
+   let counter 0
+   ask jointset in-cone 25 60[
+      array:set my-list counter self
+      set counter counter + 1
+    ]
+    print my-list
+    set seen-list my-list
+  ]
+
+end
+
+to go-to [person x y]
+
+  let jointset (turtle-set securities criminals passengers)
+
+  ask person[
+   let my-list seen-list
+   let counter 0
+   ask jointset in-cone 25 60[
+      array:set my-list counter self
+      set counter counter + 1
+    ]
+    print my-list
+    set seen-list my-list
+  ]
+
+end
 
 
 to init-criminals
@@ -631,9 +676,10 @@ to init-criminals
     set color green
     set money 0
     set has-baggage False
-     set  carrying-baggage False
+    set  carrying-baggage False
+    set seen-list array:from-list n-values 50 [0]
     ]
-   ]
+  ]
 end
 
 to set-up
@@ -761,7 +807,7 @@ INPUTBOX
 118
 333
 who-to-steal
-0.0
+4.0
 1
 0
 Number
@@ -783,7 +829,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-0.0
+1.0
 1
 0
 Number
