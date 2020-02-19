@@ -508,6 +508,14 @@ to go ; the main function called with each tick
 
     look self
 
+    let actioning true
+
+    ifelse actioning = true[
+
+      go-to self 2 2
+
+    ][
+
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
 
@@ -517,7 +525,7 @@ to go ; the main function called with each tick
     ][
       ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
     ]
-
+    ]
   ]
 
 
@@ -627,7 +635,7 @@ to init-security [number-to-place]
      set-objective self
      set has-baggage False
      set carrying-baggage False
-     set seen-list array:from-list n-values 50 [0]
+     set seen-list []
     ]
     ]
 end
@@ -637,33 +645,55 @@ end
 to look [person]
 
   let jointset (turtle-set securities criminals passengers)
+  set jointset jointset with [self != myself]  ; remove self from agentset
 
   ask person[
    let my-list seen-list
-   let counter 0
    ask jointset in-cone 25 60[
-      array:set my-list counter self
-      set counter counter + 1
-    ]
+      ifelse length my-list < 50[
+        ifelse member? self my-list[
+          let pos position self my-list
+          set my-list remove-item pos my-list
+          set my-list lput self my-list
+        ][set my-list lput self my-list]
+      ][
+        set my-list but-first my-list
+        ifelse member? self my-list[
+          let pos position self my-list
+          set my-list remove-item pos my-list
+          set my-list lput self my-list
+        ][set my-list lput self my-list]
+      ]
     print my-list
-    set seen-list my-list
+  ]
+  set seen-list my-list
   ]
 
 end
 
 to go-to [person x y]
 
-  let jointset (turtle-set securities criminals passengers)
+  let target patch x y
 
-  ask person[
-   let my-list seen-list
-   let counter 0
-   ask jointset in-cone 25 60[
-      array:set my-list counter self
-      set counter counter + 1
-    ]
-    print my-list
-    set seen-list my-list
+  ask person [
+
+    let person-p-type [patch-type] of patch-here
+    let person-p-num [number] of patch-here
+    let target-p-type [patch-type] of target
+    let target-p-num [number] of target
+
+    set objective-number target-p-num ; set objective-number equal to the target
+    face target ; set direction towards the target
+
+    ifelse distance target > 1 [ ;if distance between the criminal and the target victim is more than 1
+      ifelse person-p-num != objective-number or person-p-type != target-p-num  ; if criminal is on the wrong platform
+        [ change-platform-step self ] ; go to the platform that target is on
+        [move-around-randomly self]] ; move randomly if already on the correct platform
+        [ move-forward 1 myself ] ; move one step forwards towards the victim
+      if [pcolor] of patch-ahead 1 = red
+      [ lt 180  ;; See a red patch ahead : turn left by 180 degree
+       move-forward 1 myself ]                  ;; Otherwise, its safe to go foward.
+
   ]
 
 end
@@ -677,7 +707,7 @@ to init-criminals
     set money 0
     set has-baggage False
     set  carrying-baggage False
-    set seen-list array:from-list n-values 50 [0]
+    set seen-list []
     ]
   ]
 end
@@ -829,7 +859,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-1.0
+0.0
 1
 0
 Number
