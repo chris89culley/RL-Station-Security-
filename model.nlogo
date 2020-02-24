@@ -6,13 +6,14 @@ breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
-globals [platform-size track-size stairs-size] ;global variables
-passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage] ; features that passengers can be given
+globals [platform-size track-size stairs-size bench-col] ;global variables
+passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait] ; features that criminals can be given
+baggages-own [owner]
 
 
 to move-forward [x person]
@@ -20,12 +21,22 @@ to move-forward [x person]
   let myx xcor
   let myy ycor
   let carrying carrying-baggage
-  if carrying-baggage[
+
+  if has-baggage[
+    if not carrying-baggage [
+      let bag one-of baggages with [owner = person and distance person <= 2]
+      if  not (bag = nobody) [
+        if random-float 1 > chance-of-forget-bag [
+       ask bag [
+            create-link-with person]
+          set carrying-baggage True
+    ]]]
      ask link-neighbors [
          set xcor myx
          set ycor myy
-  ]
-  ]
+    ]]
+
+
 end
 
 ; sets the heading towards the nearest stair pixel and move towards it
@@ -34,12 +45,68 @@ to move-towards-the-stairs [person]
      let target-patch min-one-of (patches with [patch-type = "stairs"]) [distance myself] ;find the nearest stair pixel
      set heading towards  target-patch ; look at it
      move-forward 1 myself
-
-
   ] ; move to it
 end
 
 
+
+to sit [person]
+  if random-float 1 < chance-of-putting-down-bag[
+    ask my-links [
+     die
+    ]
+    set carrying-baggage False
+  ]
+
+  set gait "sitting"
+end
+
+to stand [person]
+   if random-float 1 < chance-of-putting-down-bag[
+    ask my-links [
+     die
+    ]
+        set carrying-baggage False
+  ]
+  set gait "standing"
+end
+
+
+to try-and-find-a-place-to-sit [person]
+ let plat-num objective-number
+  ifelse [pcolor] of patch-here = bench-col and not any? (other passengers-here) and number = plat-num [
+  sit person
+  ][
+    carefully[
+     let bench one-of patches with [pcolor = bench-col and  patch-type = "platform" and number = plat-num and not any? (other passengers-here) ]
+      set heading towards bench
+      move-forward 1 person ][
+     find-a-place-to-stand person
+    ]
+  ]
+end
+
+to put-down-luggage [person]
+  ask links [
+   die
+  ]
+
+end
+to find-a-place-to-stand [person]
+  carefully [
+  let plat-num objective-number
+    ifelse any? (other passengers) in-radius 3 [
+  let head  one-of patches  with [not any? (other passengers) in-radius 3 and patch-type = "platform" and number = plat-num  ]
+  set heading head
+  move-forward 1 person][
+     if [number] of patch-here = plat-num[
+        stand person
+      ]
+  ]]
+  [
+    move-around-randomly person
+  ]
+end
 
 to move-along-corridor [person]
   ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[ ; if we have arrived at the correct stairs
@@ -59,9 +126,7 @@ to move-along-corridor [person]
       set heading -90
         move-forward 1 myself
     ]
-
   ]]
-
 end
 
 to move-around-randomly [person] ; temp funciton where we just wiggle around a bit
@@ -122,13 +187,18 @@ to change-platform-step [person] ; lets try and change platform
   ifelse p-type = "platform"  [  ; if we are on a platform
     ifelse (p-num != objective-number) [  ; if this is the wrong platform
       ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
-        move-around-randomly person
+        if gait = "walking" [
+          try-and-find-a-place-to-sit person
+        ]
+      ;  move-around-randomly person
         set objective "board-train"
       ][ ; else we need to go to the stairs
     move-towards-the-stairs person
     ]][ ; else (i.e we are at the wrong objective number) we need to go to the stairs
-
-      move-around-randomly person
+      if gait = "walking" [
+        try-and-find-a-place-to-sit person
+      ]
+     ; move-around-randomly person
       set objective "board-train"
     ]
   ][ ifelse p-type = "stairs" [ ; if we are on the stairs, lets move along the corridor
@@ -177,13 +247,12 @@ to arrive [t]
      set aesthetic (abs random-normal 30 10)
      set money (aesthetic + random-normal 25 5)
      set label-color black
+     set gait "walking"
      set-objective self ; set objective function called to set where they want to go
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
      let noob self
      ask patch-here [
-        print "adding baggage to"
-        print noob
        link-baggage self noob
       ]
   ]
@@ -290,17 +359,16 @@ end
 
 
 to build_benches [x_cordinate]
-  print x_cordinate
   ask patches with [pxcor = round (x_cordinate) and patch-type = "platform"  and pycor < max-pycor - 5][
 
     carefully[
     if pycor mod 25 = 0[
-      set pcolor green
+      set pcolor bench-col
       ask patch-at 0 1 [
-        set pcolor green
+        set pcolor bench-col
       ]
       ask patch-at 0 2[
-        set pcolor green
+        set pcolor bench-col
       ]
     ]][print "oor"]
 
@@ -349,7 +417,8 @@ end
 
 to build-bench-set
   build_benches (platform-size / 3)
-  build_benches (platform-size + track-size) + platform-size
+  build_benches (platform-size  + track-size / 2) + platform-size
+   build_benches (platform-size  + 3 * track-size / 2 ) + platform-size
   build_benches (3 * platform-size + 2 * track-size) + platform-size / 3
 end
 
@@ -417,13 +486,13 @@ end
 
 ; adds new passengers from the entrances
 to add-new-passengers
-  print(ticks)
   if (ticks mod ticks-per-arrival = 0)[ ; we do this every 'ticks per arrival' ticks
     let no-entering (random average-arrival-number) + 1 ; randomly choose the number to enter
     ask n-of no-entering patches with [patch-type = "entrance"][  ; ask n of the patches that are entrance to create a passenger
      sprout-passengers 1 [
      set shape "person"
      set color white
+     set gait "walking"
      set objective-number (random 4) + 1 ; a random platform they want to get on
      set label-color black
      set has-baggage (random-float 1 < percentage_with_bag)
@@ -439,7 +508,6 @@ end
 
 
 to follow-target
-
   ask criminals [
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
@@ -487,7 +555,11 @@ to go ; the main function called with each tick
       ifelse any? trains with [train-line-number = line and arriving = false and leaving = false][ ; if there is a train will let people on it
         board-train self ; get on it
       ][
-           move-around-randomly self
+        if gait = "walking" [
+          try-and-find-a-place-to-sit self
+        ]
+
+          ; move-around-randomly self
       ]]
 
     if wants-to-exit and p-num = objective-number and p-type != "corridor"[ ; if we want to exit and are on at the right exit
@@ -574,6 +646,7 @@ to set-up-globals
   set platform-size (max-pxcor * 0.2)
   set track-size (max-pxcor * 0.1)
   set stairs-size max-pycor * 0.1
+  set bench-col green
 end
 
 ; creates an objective for a passenger leaving a train (arriving in the station)
@@ -603,6 +676,7 @@ to link-baggage [patch_i person]
 
    if [has-baggage] of person [
     sprout-baggages 1[
+      set owner person
       set shape "suitcase"
       create-link-with person
   ]]
@@ -618,6 +692,7 @@ to init-people [number-to-place]
      set aesthetic (abs random-normal 30 10)
      set money (aesthetic + random-normal 25 5)
      set label-color black
+     set gait "walking"
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
      set-objective self ; set their objective
@@ -633,6 +708,7 @@ to init-security [number-to-place]
      set shape "person"
      set color yellow
      set-objective self
+     set gait "walking"
      set has-baggage False
      set carrying-baggage False
      set seen-list []
@@ -664,7 +740,6 @@ to look [person]
           set my-list lput self my-list
         ][set my-list lput self my-list]
       ]
-    print my-list
   ]
   set seen-list my-list
   ]
@@ -705,6 +780,7 @@ to init-criminals
     set shape "person"
     set color green
     set money 0
+    set gait "walking"
     set has-baggage False
     set  carrying-baggage False
     set seen-list []
@@ -849,7 +925,7 @@ SWITCH
 446
 show-target-value?
 show-target-value?
-0
+1
 1
 -1000
 
@@ -970,6 +1046,28 @@ INPUTBOX
 571
 percentage_with_bag
 0.2
+1
+0
+Number
+
+INPUTBOX
+989
+572
+1138
+632
+chance-of-putting-down-bag
+1.0
+1
+0
+Number
+
+INPUTBOX
+1158
+460
+1307
+520
+chance-of-forget-bag
+0.001
 1
 0
 Number
@@ -1326,7 +1424,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
