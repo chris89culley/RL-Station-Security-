@@ -12,7 +12,7 @@ cameras-own [fov dis]
 securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -243,9 +243,13 @@ to arrive [t]
   sprout-passengers coming-off [ ; create the passengers that leave the train
      set shape "person"
      set color blue
-     set vulnerability (abs random-normal 15 8)
-     set aesthetic (abs random-normal 30 10)
-     set money (aesthetic + random-normal 25 5)
+     set vulnerability (random-normal 0.5 0.125)
+      if vulnerability > 1 [set vulnerability 1]
+      if vulnerability < 0 [set vulnerability 0]
+     set aesthetic (random-normal 0.5 0.125)
+      if aesthetic > 1 [set aesthetic 1]
+      if aesthetic < 0 [set aesthetic 0]
+     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
      set label-color black
      set gait "walking"
      set-objective self ; set objective function called to set where they want to go
@@ -492,6 +496,13 @@ to add-new-passengers
      sprout-passengers 1 [
      set shape "person"
      set color white
+     set vulnerability (random-normal 0.5 0.125)
+      if vulnerability > 1 [set vulnerability 1]
+      if vulnerability < 0 [set vulnerability 0]
+     set aesthetic (random-normal 0.5 0.125)
+      if aesthetic > 1 [set aesthetic 1]
+      if aesthetic < 0 [set aesthetic 0]
+     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
      set gait "walking"
      set objective-number (random 4) + 1 ; a random platform they want to get on
      set label-color black
@@ -509,27 +520,30 @@ end
 
 to follow-target
   ask criminals [
-    let p-type [patch-type] of patch-here
-    let p-num [number] of patch-here
-    set objective-number [objective-number] of passenger who-to-steal ; set objective-number equal to the target victim
-    face passenger who-to-steal ; set direction towards the target victim
-    ifelse distance passenger who-to-steal > 1 [ ;if distance between the criminal and the target victim is more than 1
-      ifelse p-num != objective-number or p-type != "platform"  ; if criminal is on the wrong platform
-        [ change-platform-step self ] ; go to the platform that the victim is heading
-        [ move-around-randomly self]] ; move randomly if already on the correct platform
-        [ move-forward 1 myself ] ; move one step forwards towards the victim
-      if [pcolor] of patch-ahead 1 = red
-      [ lt 180  ;; See a red patch ahead : turn left by 180 degree
-       move-forward 1 myself ]                  ;; Otherwise, its safe to go foward.
+    let p-type [patch-type] of patch-here ; check the current patch type
+    let p-num [number] of patch-here ;check the current patch number
+    set victim-target passenger who-to-steal ;set golbal varialbe victim-target to who-to-steal input
+    let p-num-victim [[number]of patch-here] of victim-target ; chekc the current patch number of the victim-target
+    set objective-number p-num-victim ; set cirminal's objective-number to the vitim's current location
+    face victim-target ; set direction towards the target victim
 
+    ifelse p-num != objective-number or p-type != "platform" [  ; if criminal is on the wrong platform
+      ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
+        fd 1] ; forward 1
+      [change-platform-step myself]] ; change platform with objective-number as the vitim's current location
+    [fd 1] ;forward 1 towards the viticm if criminal is on the same platform as the victim
   ]
 end
 
-to steal-target [ turtle1 turtle2 ]
-
-  let temp [money] of turtle1 ; temp variable for consecutive pick-pocket development
-  ask turtle1 [ set money [ money ] of turtle2 ] ; set money to the same value as the victim
-  ask turtle2 [ set money 0] ; set victim's money value to zero
+to steal-target
+   let temp1 [money] of criminals ; set local variable temp1 to hold criminal's initial balance
+   let temp2 [money] of victim-target; set local varialbe temp2 to hold victim's initial balance
+   let success-rate [vulnerability] of victim-target ; set local variable success-reate equal to global vulnerability of the victim
+   ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
+    ask criminals [set money temp1 + temp2 ; ask criminal to set money of temp1 + temp2
+      move-around-randomly myself] ;and start wondering around randomly
+    ask victim-target[set money 0]]; ask vitim to set money to 0
+  [ask criminals [move-around-randomly myself]] ;if fail to steal, move around randomly
 end
 
 
@@ -602,7 +616,9 @@ to go ; the main function called with each tick
 
 
   ask criminals [
-
+    let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here
+    look self
     let v [visibility] of patch-here
       ifelse v = true[
         set visible true
@@ -610,8 +626,11 @@ to go ; the main function called with each tick
       ][set visible false]
     if seen != true [set seen false]
 
-    follow-target
-    if distance passenger who-to-steal < 1 [ steal-target criminals passenger who-to-steal]]
+    carefully[
+      follow-target
+        steal-target]
+   [move-around-randomly self]
+  ]
 
     let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
     foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
@@ -688,9 +707,13 @@ to init-people [number-to-place]
     sprout-passengers 1 [
      set shape "person"
      set color white
-     set vulnerability ( abs random-normal 15 8 )
-     set aesthetic (abs random-normal 30 10)
-     set money (aesthetic + random-normal 25 5)
+     set vulnerability (random-normal 0.5 0.125)
+      if vulnerability > 1 [set vulnerability 1]
+      if vulnerability < 0 [set vulnerability 0]
+     set aesthetic (random-normal 0.5 0.125)
+      if aesthetic > 1 [set aesthetic 1]
+      if aesthetic < 0 [set aesthetic 0]
+     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
      set label-color black
      set gait "walking"
      set has-baggage (random-float 1 > percentage_with_bag)
@@ -935,7 +958,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-0.0
+1.0
 1
 0
 Number
@@ -1424,7 +1447,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
