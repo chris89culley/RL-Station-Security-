@@ -9,7 +9,7 @@ breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target] ; features that criminals can be given
@@ -187,19 +187,19 @@ to change-platform-step [person] ; lets try and change platform
   ifelse p-type = "platform"  [  ; if we are on a platform
     ifelse (p-num != objective-number) [  ; if this is the wrong platform
       ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
-        if gait = "walking" [
-          try-and-find-a-place-to-sit person
+        if (gait = "walking") [
+          if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
         ]
       ;  move-around-randomly person
-        set objective "board-train"
+        if ([breed] of person = passengers) [set objective "board-train"]
       ][ ; else we need to go to the stairs
     move-towards-the-stairs person
     ]][ ; else (i.e we are at the wrong objective number) we need to go to the stairs
-      if gait = "walking" [
-        try-and-find-a-place-to-sit person
+      if (gait = "walking") [
+        if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
       ]
      ; move-around-randomly person
-      set objective "board-train"
+      if ([breed] of person = passengers) [set objective "board-train"]
     ]
   ][ ifelse p-type = "stairs" [ ; if we are on the stairs, lets move along the corridor
      move-along-corridor person
@@ -594,17 +594,13 @@ to go ; the main function called with each tick
 
     look self
 
-    let actioning true
-
     ifelse actioning = true[
-
-      go-to self 2 2
-
+      ;go-to self max-pycor - 3 max-pxcor - 4
+      go-to self 3 4
     ][
 
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
-
     ifelse p-num != objective-number or p-type != "platform" [
 
       change-platform-step self
@@ -735,6 +731,7 @@ to init-security [number-to-place]
      set has-baggage False
      set carrying-baggage False
      set seen-list []
+     ;set actioning true
     ]
     ]
 end
@@ -746,28 +743,89 @@ to look [person]
   let jointset (turtle-set securities criminals passengers)
   set jointset jointset with [self != myself]  ; remove self from agentset
 
+
   ask person[
    let my-list seen-list
+   let pass-list []
    ask jointset in-cone 25 60[
-      ifelse length my-list < 50[
-        ifelse member? self my-list[
-          let pos position self my-list
-          set my-list remove-item pos my-list
-          set my-list lput self my-list
-        ][set my-list lput self my-list]
-      ][
-        set my-list but-first my-list
-        ifelse member? self my-list[
-          let pos position self my-list
-          set my-list remove-item pos my-list
-          set my-list lput self my-list
-        ][set my-list lput self my-list]
+
+      get-angle myself self
+
+      ;get new list which is just a list of the passengers
+
+
+      foreach my-list [[val]->
+        set pass-list lput item 0 val pass-list
       ]
+
+      ifelse member? self pass-list[
+        let pos position self pass-list
+        set my-list remove-item pos my-list
+        set pass-list remove-item pos pass-list
+        ;set my-list lput self my-list
+        set my-list lput (list self ticks xcor ycor) my-list
+        set pos position self my-list
+        ][
+        ifelse length my-list < 50[
+          set my-list lput (list self ticks xcor ycor) my-list
+          let pos position self my-list
+        ][
+          set my-list but-first my-list
+          set my-list lput (list self ticks xcor ycor) my-list
+          let pos position self my-list
+        ]
+      ]
+
+;      ifelse length my-list < 50[
+;        ifelse member? self my-list[
+;          let pos position self my-list
+;          set my-list remove-item pos my-list
+;          set my-list lput self my-list
+;        ][set my-list lput self my-list]
+;      ][
+;        set my-list but-first my-list
+;        ifelse member? self my-list[
+;          let pos position self my-list
+;          set my-list remove-item pos my-list
+;          set my-list lput self my-list
+;        ][set my-list lput self my-list]
+;      ]
+
   ]
   set seen-list my-list
+  print seen-list
   ]
 
 end
+
+
+to get-angle [person target]
+
+ask person[
+
+    if [distance person] of target > 1[
+
+    let heading-angle heading
+    let perspective-angle heading
+
+    ask target[
+      set heading-angle heading
+      set perspective-angle towards myself
+    ]
+
+    ;print heading-angle
+    ;print perspective-angle
+
+
+    let dif heading-angle - perspective-angle
+    if dif < 0 [set dif 360 + dif]
+
+    ;print dif
+  ]
+  ]
+end
+
+
 
 to go-to [person x y]
 
@@ -784,14 +842,18 @@ to go-to [person x y]
     face target ; set direction towards the target
 
     ifelse distance target > 1 [ ;if distance between the criminal and the target victim is more than 1
-      ifelse person-p-num != objective-number or person-p-type != target-p-num  ; if criminal is on the wrong platform
-        [ change-platform-step self ] ; go to the platform that target is on
-        [move-around-randomly self]] ; move randomly if already on the correct platform
-        [ move-forward 1 myself ] ; move one step forwards towards the victim
-      if [pcolor] of patch-ahead 1 = red
-      [ lt 180  ;; See a red patch ahead : turn left by 180 degree
-       move-forward 1 myself ]                  ;; Otherwise, its safe to go foward.
 
+      ifelse person-p-num != objective-number or person-p-type != target-p-type[
+
+        ifelse person-p-num != objective-number[
+          change-platform-step self][
+          move-towards-the-stairs self
+        ]
+      ][
+        forward 1
+    ]] ; go to the platform that target is on
+        [stop]
+    ; move one step forwards towards the victim
   ]
 
 end
@@ -805,7 +867,7 @@ to init-criminals
     set money 0
     set gait "walking"
     set has-baggage False
-    set  carrying-baggage False
+    set carrying-baggage False
     set seen-list []
     ]
   ]
@@ -876,7 +938,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -914,7 +976,7 @@ INPUTBOX
 1141
 410
 ticks-per-arrival
-20.0
+2000.0
 1
 0
 Number
@@ -925,7 +987,7 @@ INPUTBOX
 1308
 408
 average-arrival-number
-5.0
+0.0
 1
 0
 Number
@@ -958,7 +1020,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-1.0
+0.0
 1
 0
 Number
