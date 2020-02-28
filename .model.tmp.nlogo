@@ -749,50 +749,39 @@ to look [person]
    let pass-list []
    ask jointset in-cone 25 60[
 
-      get-angle myself self
+      ;let angle get-angle myself self
 
-      ;get new list which is just a list of the passengers
-
+      let angle-list [0 0 0 0]
 
       foreach my-list [[val]->
         set pass-list lput item 0 val pass-list
       ]
 
-
-
-
       ifelse member? self pass-list[
         let pos position self pass-list
         set my-list remove-item pos my-list
         set pass-list remove-item pos pass-list
-        ;set my-list lput self my-list
-        set my-list lput (list self ticks xcor ycor) my-list
+        set my-list lput (list self ticks xcor ycor angle-list) my-list
         set pos position self my-list
         ][
         ifelse length my-list < 50[
-          set my-list lput (list self ticks xcor ycor) my-list
+
+          let angle get-angle myself self
+
+          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
+          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
+          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
+                                               [ set angle-list replace-item 3 angle-list 1 ]
+          ]]
+
+          set my-list lput (list self ticks xcor ycor angle-list) my-list
           let pos position self my-list
         ][
           set my-list but-first my-list
-          set my-list lput (list self ticks xcor ycor) my-list
+          set my-list lput (list self ticks xcor ycor angle-list) my-list
           let pos position self my-list
         ]
       ]
-
-;      ifelse length my-list < 50[
-;        ifelse member? self my-list[
-;          let pos position self my-list
-;          set my-list remove-item pos my-list
-;          set my-list lput self my-list
-;        ][set my-list lput self my-list]
-;      ][
-;        set my-list but-first my-list
-;        ifelse member? self my-list[
-;          let pos position self my-list
-;          set my-list remove-item pos my-list
-;          set my-list lput self my-list
-;        ][set my-list lput self my-list]
-;      ]
 
   ]
   set seen-list my-list
@@ -802,8 +791,8 @@ to look [person]
 end
 
 
-to get-angle [person target]
-
+to-report get-angle [person target]
+let dif 0
 ask person[
 
     if [distance person] of target > 1[
@@ -816,16 +805,11 @@ ask person[
       set perspective-angle towards myself
     ]
 
-    ;print heading-angle
-    ;print perspective-angle
-
-
-    let dif heading-angle - perspective-angle
+    set dif heading-angle - perspective-angle
     if dif < 0 [set dif 360 + dif]
-
-    ;print dif
+    ]
   ]
-  ]
+  report dif
 end
 
 
