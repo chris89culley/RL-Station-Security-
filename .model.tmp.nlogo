@@ -9,7 +9,7 @@ breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning judgement] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target] ; features that criminals can be given
@@ -731,6 +731,9 @@ to init-security [number-to-place]
      set has-baggage False
      set carrying-baggage False
      set seen-list []
+     set judgement (random-normal 0.5 0.125)
+      if judgement > 1 [set judgement 1]
+      if judgement < 0 [set judgement 0]
      ;set actioning true
     ]
     ]
@@ -747,39 +750,55 @@ to look [person]
   ask person[
    let my-list seen-list
    let pass-list []
+
    ask jointset in-cone 25 60[
 
-      ;let angle get-angle myself self
+      foreach my-list [[val]->
+       set pass-list lput item 0 val pass-list
+      ]
 
       let angle-list [0 0 0 0]
 
-      foreach my-list [[val]->
-        set pass-list lput item 0 val pass-list
-      ]
-
       ifelse member? self pass-list[
+
         let pos position self pass-list
+        let properties item pos my-list
         set my-list remove-item pos my-list
         set pass-list remove-item pos pass-list
-        set my-list lput (list self ticks xcor ycor angle-list) my-list
-        set pos position self my-list
-        ][
-        ifelse length my-list < 50[
-
-          let angle get-angle myself self
-
+        set angle-list item 4 properties
+        let angle get-angle myself self
           ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
           [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
           [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
 
-          set my-list lput (list self ticks xcor ycor angle-list) my-list
+        ;let vuln vulnerability
+        ;let judegement [judgement] of myself
+        ;let familiarity ((sum angle-list) + 1) * judgement
+        ;set vuln vuln * familiarity
+        set my-list lput (list self ticks xcor ycor angle-list vuln) my-list
+
+        ][
+        ifelse length my-list < 50[
+          let angle get-angle myself self
+          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
+          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
+          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
+                                               [ set angle-list replace-item 3 angle-list 1 ]
+          ]]
+          set my-list lput (list self ticks xcor ycor angle-list vulnerability) my-list
           let pos position self my-list
         ][
           set my-list but-first my-list
+          set my-list lput (list self ticks xcor ycor angle-list vulnerability) my-list
+          let angle get-angle myself self
+          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
+          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
+          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
+                                               [ set angle-list replace-item 3 angle-list 1 ]
+          ]]
           set my-list lput (list self ticks xcor ycor angle-list) my-list
-          let pos position self my-list
         ]
       ]
 
