@@ -731,7 +731,7 @@ to init-security [number-to-place]
      set has-baggage False
      set carrying-baggage False
      set seen-list []
-     set judgement (random-normal 0.5 0.125)
+     set judgement (random-normal 0.1 0.025)
       if judgement > 1 [set judgement 1]
       if judgement < 0 [set judgement 0]
      ;set actioning true
@@ -773,11 +773,15 @@ to look [person]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
 
-        ;let vuln vulnerability
-        ;let judegement [judgement] of myself
-        ;let familiarity ((sum angle-list) + 1) * judgement
-        ;set vuln vuln * familiarity
-        set my-list lput (list self ticks xcor ycor angle-list vuln) my-list
+        let vuln vulnerability
+        let judge [judgement] of myself
+        let familiarity ((sum angle-list) + 1) * judge
+
+        set vuln (random-normal vulnerability familiarity)
+        if vuln > 1 [set vuln 1]
+        if vuln < 0 [set vuln 0]
+
+        set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln) my-list
 
         ][
         ifelse length my-list < 50[
@@ -787,20 +791,40 @@ to look [person]
           [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
-          set my-list lput (list self ticks xcor ycor angle-list vulnerability) my-list
+          let vuln vulnerability
+          let judge [judgement] of myself
+          let familiarity ((sum angle-list) + 1) * judge
+
+          set vuln (random-normal vulnerability familiarity)
+          if vuln > 1 [set vuln 1]
+          if vuln < 0 [set vuln 0]
+
+          set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln ) my-list
           let pos position self my-list
         ][
           set my-list but-first my-list
-          set my-list lput (list self ticks xcor ycor angle-list vulnerability) my-list
+
           let angle get-angle myself self
           ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
           [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
           [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
-          set my-list lput (list self ticks xcor ycor angle-list) my-list
+          let vuln vulnerability
+          let judge [judgement] of myself
+          let familiarity ((sum angle-list) + 1) * judge
+
+          set vuln (random-normal vulnerability familiarity)
+          if vuln > 1 [set vuln 1]
+          if vuln < 0 [set vuln 0]
+
+          set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln) my-list
         ]
       ]
+
+  ; for each passenger returns list -> (personID   tick-last-seen   x-cor-last-seen   y-cor-last-seen   quadrant-list   actual-vulnerability   perceived-vulnerability)
+
+      ; -> std about vulnerability = sum of quadrant list multiplied by intrinsic std which is stored in the judgment parameter -> it's less than one so it should reduce as q
 
   ]
   set seen-list my-list
