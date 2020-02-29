@@ -739,33 +739,47 @@ to init-security [number-to-place]
     ]
 end
 
-;Starter -> give each person memory count (like 'counter' for each turtle with 'look' method), set value at memory-count%50 position of array
 
 to look [person]
 
+  ; get agentset of all turtles
   let jointset (turtle-set securities criminals passengers)
-  set jointset jointset with [self != myself]  ; remove self from agentset
+  ; remove self from agentset
+  set jointset jointset with [self != myself]
 
-
+  ; start looking function
   ask person[
+   ;create local list -> so it can be used in the function
    let my-list seen-list
+   ;initialise pass-list -> the list of passengers seen
    let pass-list []
 
+   ;ask all agents in field of view
    ask jointset in-cone 25 60[
 
+      ;go through the memory list create list of passengerIDs
       foreach my-list [[val]->
        set pass-list lput item 0 val pass-list
       ]
 
+      ;initialise the quadrant list
       let angle-list [0 0 0 0]
 
+      ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
       ifelse member? self pass-list[
 
+        ;find their position and get their proprties and store them
         let pos position self pass-list
         let properties item pos my-list
+
+        ;now remove them from both lists
         set my-list remove-item pos my-list
         set pass-list remove-item pos pass-list
+
+        ;get their angle list -> overwriting [0 0 0 0]
         set angle-list item 4 properties
+
+        ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
         let angle get-angle myself self
           ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
           [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
@@ -773,24 +787,35 @@ to look [person]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
 
+        ;now get vulnerability of passenger -> initialise perceived vulnerability as this
         let vuln vulnerability
+        ;get judgement of turtle calling 'look'
         let judge [judgement] of myself
+        ;ascertain familiarity a multiplicative factor applied to judgement -> depends on no. quadrants seen from
         let familiarity ((sum angle-list) + 1) * judge
 
+        ;this familiarity now refers to the std about the vulnerability
         set vuln (random-normal vulnerability familiarity)
+        ;clipping
         if vuln > 1 [set vuln 1]
         if vuln < 0 [set vuln 0]
 
+        ;now put values into the list along with the calculated values
         set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln) my-list
 
         ][
+        ;person hasn't been seen before -> so now new memory needs to be created -> first check if list is less than 50
         ifelse length my-list < 50[
+
+          ;not been seen before -> so function uses [0 0 0 0] for angle list initially
           let angle get-angle myself self
           ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
           [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
           [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
                                                [ set angle-list replace-item 3 angle-list 1 ]
           ]]
+
+          ;same as in above condition
           let vuln vulnerability
           let judge [judgement] of myself
           let familiarity ((sum angle-list) + 1) * judge
@@ -802,8 +827,10 @@ to look [person]
           set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln ) my-list
           let pos position self my-list
         ][
+          ;memory list is 50 values in length so remove the latest memory -> the first one
           set my-list but-first my-list
 
+          ;same as in above condition
           let angle get-angle myself self
           ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
           [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
@@ -824,34 +851,41 @@ to look [person]
 
   ; for each passenger returns list -> (personID   tick-last-seen   x-cor-last-seen   y-cor-last-seen   quadrant-list   actual-vulnerability   perceived-vulnerability)
 
-      ; -> std about vulnerability = sum of quadrant list multiplied by intrinsic std which is stored in the judgment parameter -> it's less than one so it should reduce as q
+      ; -> std about vulnerability = sum of quadrant list multiplied by intrinsic std which is stored in the judgment parameter -> judgement is less than one so it should reduce as quadrant list increases
 
   ]
+  ; take locally stored my-list and set seen
   set seen-list my-list
   print seen-list
   ]
 
 end
 
-
+;returns angle between observer (person) and target (target)
 to-report get-angle [person target]
 let dif 0
 ask person[
 
+    ;Errors if they occupy the same patch -> so only carry out function if in different patch
     if [distance person] of target > 1[
 
+    ;perspective is the angle of vector from target to person heading is the heading of target -> initialise these as heading initially
     let heading-angle heading
     let perspective-angle heading
 
     ask target[
+      ;get these angles -> probably don't need the first one
       set heading-angle heading
       set perspective-angle towards myself
     ]
 
+    ;get the difference to get orientation target is being observed from
     set dif heading-angle - perspective-angle
     if dif < 0 [set dif 360 + dif]
     ]
   ]
+
+  ;return this value
   report dif
 end
 
