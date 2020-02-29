@@ -791,7 +791,7 @@ to look [person]
         let vuln vulnerability
         ;get judgement of turtle calling 'look'
         let judge [judgement] of myself
-        ;ascertain familiarity a multiplicative factor applied to judgement -> depends on no. quadrants seen from
+        ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
         let familiarity ((sum angle-list) + 1) * judge
 
         ;this familiarity now refers to the std about the vulnerability
@@ -854,8 +854,9 @@ to look [person]
       ; -> std about vulnerability = sum of quadrant list multiplied by intrinsic std which is stored in the judgment parameter -> judgement is less than one so it should reduce as quadrant list increases
 
   ]
-  ; take locally stored my-list and set seen
+  ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list
+  ;print was used for debugging
   print seen-list
   ]
 
