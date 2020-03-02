@@ -1,0 +1,195 @@
+
+to move-forward [x person]
+  forward x
+  let myx xcor
+  let myy ycor
+  let carrying carrying-baggage
+
+  if has-baggage[
+    if not carrying-baggage [
+      let bag one-of baggages with [owner = person and distance person <= 2]
+      if  not (bag = nobody) [
+        if random-float 1 > chance-of-forget-bag [
+       ask bag [
+            create-link-with person]
+          set carrying-baggage True
+    ]]]
+     ask link-neighbors [
+         set xcor myx
+         set ycor myy
+    ]]
+
+
+end
+
+; sets the heading towards the nearest stair pixel and move towards it
+to move-towards-the-stairs [person]
+    ask person [
+     let target-patch min-one-of (patches with [patch-type = "stairs"]) [distance myself] ;find the nearest stair pixel
+     set heading towards  target-patch ; look at it
+     move-forward 1 myself
+  ] ; move to it
+end
+
+
+
+to sit [person]
+  if random-float 1 < chance-of-putting-down-bag[
+    ask my-links [
+     die
+    ]
+    set carrying-baggage False
+  ]
+
+  set gait "sitting"
+end
+
+to stand [person]
+   if random-float 1 < chance-of-putting-down-bag[
+    ask my-links [
+     die
+    ]
+        set carrying-baggage False
+  ]
+  set gait "standing"
+end
+
+
+
+
+to try-and-find-a-place-to-sit [person]
+ let plat-num objective-number
+  ifelse [pcolor] of patch-here = bench-col and not any? (other passengers-here) and number = plat-num [
+  sit person
+  ][
+    carefully[
+     let bench one-of patches with [pcolor = bench-col and  patch-type = "platform" and number = plat-num and not any? (other passengers-here) ]
+      set heading towards bench
+      move-forward 1 person ][
+     find-a-place-to-stand person
+    ]
+  ]
+end
+
+to put-down-luggage [person]
+  ask links [
+   die
+  ]
+
+end
+to find-a-place-to-stand [person]
+  carefully [
+  let plat-num objective-number
+    ifelse any? (other passengers) in-radius 3 [
+  let head  one-of patches  with [not any? (other passengers) in-radius 3 and patch-type = "platform" and number = plat-num  ]
+  set heading head
+  move-forward 1 person][
+     if [number] of patch-here = plat-num[
+        stand person
+      ]
+  ]]
+  [
+    move-around-randomly person
+  ]
+end
+
+to move-along-corridor [person]
+  ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[ ; if we have arrived at the correct stairs
+    ask person [
+     set heading 0
+      move-forward 2 myself
+    ]
+  ][  ; else of the if
+  ask person [
+    let num objective-number
+    let x [pxcor] of one-of patches with [patch-type = "platform" and number = num ] ; pixel of the platform we want to get to
+    ifelse x > xcor [  ; face and go right
+       set heading 90
+       move-forward 1 myself
+    ][ ; face and go left (this is the else part of the if)
+
+      set heading -90
+        move-forward 1 myself
+    ]
+  ]]
+end
+
+to move-around-randomly [person] ; temp funciton where we just wiggle around a bit
+  let n objective-number
+  carefully [
+  if ticks mod 5 = 0 [
+    set heading towards one-of patches with [patch-type = "platform" and number = n] ]
+
+  if [patch-type] of patch-ahead 1 != "line" [
+    move-forward 1 myself
+  ]][
+   back 1
+  ]
+
+end
+
+to stroll [person] ; temp funciton where we just wiggle around a bit
+  let n objective-number
+  carefully [
+  if [patch-type] of patch-ahead 1 != "line" [
+    move-forward 1 myself
+  ]][
+   move-forward -2 person
+  ]
+
+
+end
+
+
+to board-train [person]
+  let line objective-number  ; the line we want to join
+  let nearest min-one-of trains with [train-line-number = line] [distance myself] ; closest carriage to me
+    facexy  xcor  [pycor] of nearest ; face the y cordinate of the carriage
+    if abs (ycor - [pycor] of nearest) <= 2[  ; we only look at the carriage if it is directly to the right/left of us
+      face nearest
+    ]
+
+    move-forward 1 person
+    if any? trains in-radius 2[  ; are we really close to the train?
+    ask trains in-radius 2[  ; if yes, get on it and add to the count of the carriage
+      set passenger-count passenger-count + 1
+      set label passenger-count
+      ]
+     ask link-neighbors [
+     die  ; remove the suitcase
+    ]
+     die ; this just removes the passenger from the game
+]
+
+
+end
+
+
+to change-platform-step [person] ; lets try and change platform
+  let p-num [number] of patch-here ; the number we are at
+  let p-type [patch-type] of patch-here ; the type of patch we are on
+
+  ifelse p-type = "platform"  [  ; if we are on a platform
+    ifelse (p-num != objective-number) [  ; if this is the wrong platform
+      ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
+        if (gait = "walking") [
+          if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
+        ]
+      ;  move-around-randomly person
+        if ([breed] of person = passengers) [set objective "board-train"]
+      ][ ; else we need to go to the stairs
+    move-towards-the-stairs person
+    ]][ ; else (i.e we are at the wrong objective number) we need to go to the stairs
+      if (gait = "walking") [
+        if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
+      ]
+     ; move-around-randomly person
+      if ([breed] of person = passengers) [set objective "board-train"]
+    ]
+  ][ ifelse p-type = "stairs" [ ; if we are on the stairs, lets move along the corridor
+     move-along-corridor person
+  ]
+  [if p-type = "corridor" [ ; if we are on a corridor, keep going down it
+     move-along-corridor person
+]]]
+end

@@ -1,3 +1,5 @@
+__includes["train_movement.nls" "station_builder.nls" "person_movement.nls"]
+
 extensions [array]
 
 breed [cameras camera]
@@ -9,227 +11,21 @@ breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning judgement] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning judgement vulnerability aesthetic money] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
 criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target] ; features that criminals can be given
 baggages-own [owner]
 
 
-to move-forward [x person]
-  forward x
-  let myx xcor
-  let myy ycor
-  let carrying carrying-baggage
-
-  if has-baggage[
-    if not carrying-baggage [
-      let bag one-of baggages with [owner = person and distance person <= 2]
-      if  not (bag = nobody) [
-        if random-float 1 > chance-of-forget-bag [
-       ask bag [
-            create-link-with person]
-          set carrying-baggage True
-    ]]]
-     ask link-neighbors [
-         set xcor myx
-         set ycor myy
-    ]]
-
-
-end
-
-; sets the heading towards the nearest stair pixel and move towards it
-to move-towards-the-stairs [person]
-    ask person [
-     let target-patch min-one-of (patches with [patch-type = "stairs"]) [distance myself] ;find the nearest stair pixel
-     set heading towards  target-patch ; look at it
-     move-forward 1 myself
-  ] ; move to it
-end
-
-
-
-to sit [person]
-  if random-float 1 < chance-of-putting-down-bag[
-    ask my-links [
-     die
-    ]
-    set carrying-baggage False
-  ]
-
-  set gait "sitting"
-end
-
-to stand [person]
-   if random-float 1 < chance-of-putting-down-bag[
-    ask my-links [
-     die
-    ]
-        set carrying-baggage False
-  ]
-  set gait "standing"
-end
-
-
-to try-and-find-a-place-to-sit [person]
- let plat-num objective-number
-  ifelse [pcolor] of patch-here = bench-col and not any? (other passengers-here) and number = plat-num [
-  sit person
-  ][
-    carefully[
-     let bench one-of patches with [pcolor = bench-col and  patch-type = "platform" and number = plat-num and not any? (other passengers-here) ]
-      set heading towards bench
-      move-forward 1 person ][
-     find-a-place-to-stand person
-    ]
-  ]
-end
-
-to put-down-luggage [person]
-  ask links [
-   die
-  ]
-
-end
-to find-a-place-to-stand [person]
-  carefully [
-  let plat-num objective-number
-    ifelse any? (other passengers) in-radius 3 [
-  let head  one-of patches  with [not any? (other passengers) in-radius 3 and patch-type = "platform" and number = plat-num  ]
-  set heading head
-  move-forward 1 person][
-     if [number] of patch-here = plat-num[
-        stand person
-      ]
-  ]]
-  [
-    move-around-randomly person
-  ]
-end
-
-to move-along-corridor [person]
-  ifelse [number] of patch-here = objective-number and [patch-type] of patch-here = "stairs"[ ; if we have arrived at the correct stairs
-    ask person [
-     set heading 0
-      move-forward 2 myself
-    ]
-  ][  ; else of the if
-  ask person [
-    let num objective-number
-    let x [pxcor] of one-of patches with [patch-type = "platform" and number = num ] ; pixel of the platform we want to get to
-    ifelse x > xcor [  ; face and go right
-       set heading 90
-       move-forward 1 myself
-    ][ ; face and go left (this is the else part of the if)
-
-      set heading -90
-        move-forward 1 myself
-    ]
-  ]]
-end
-
-to move-around-randomly [person] ; temp funciton where we just wiggle around a bit
-  let n objective-number
-  carefully [
-  if ticks mod 5 = 0 [
-    set heading towards one-of patches with [patch-type = "platform" and number = n] ]
-
-  if [patch-type] of patch-ahead 1 != "line" [
-    move-forward 1 myself
-  ]][
-   back 1
-  ]
-
-end
-
-to stroll [person] ; temp funciton where we just wiggle around a bit
-  let n objective-number
-  carefully [
-  if [patch-type] of patch-ahead 1 != "line" [
-    move-forward 1 myself
-  ]][
-   move-forward -2 person
-  ]
-
-
-end
-
-
-to board-train [person]
-  let line objective-number  ; the line we want to join
-  let nearest min-one-of trains with [train-line-number = line] [distance myself] ; closest carriage to me
-    facexy  xcor  [pycor] of nearest ; face the y cordinate of the carriage
-    if abs (ycor - [pycor] of nearest) <= 2[  ; we only look at the carriage if it is directly to the right/left of us
-      face nearest
-    ]
-
-    move-forward 1 person
-    if any? trains in-radius 2[  ; are we really close to the train?
-    ask trains in-radius 2[  ; if yes, get on it and add to the count of the carriage
-      set passenger-count passenger-count + 1
-      set label passenger-count
-      ]
-     ask link-neighbors [
-     die  ; remove the suitcase
-    ]
-     die ; this just removes the passenger from the game
-]
-
-
-end
-
-
-to change-platform-step [person] ; lets try and change platform
-  let p-num [number] of patch-here ; the number we are at
-  let p-type [patch-type] of patch-here ; the type of patch we are on
-
-  ifelse p-type = "platform"  [  ; if we are on a platform
-    ifelse (p-num != objective-number) [  ; if this is the wrong platform
-      ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
-        if (gait = "walking") [
-          if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
-        ]
-      ;  move-around-randomly person
-        if ([breed] of person = passengers) [set objective "board-train"]
-      ][ ; else we need to go to the stairs
-    move-towards-the-stairs person
-    ]][ ; else (i.e we are at the wrong objective number) we need to go to the stairs
-      if (gait = "walking") [
-        if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
-      ]
-     ; move-around-randomly person
-      if ([breed] of person = passengers) [set objective "board-train"]
-    ]
-  ][ ifelse p-type = "stairs" [ ; if we are on the stairs, lets move along the corridor
-     move-along-corridor person
-  ]
-  [if p-type = "corridor" [ ; if we are on a corridor, keep going down it
-     move-along-corridor person
-]]]
-end
-
-to leaving_train_move
-  ask trains with [leaving = true][
-    forward 1
-    if (ycor >= max-pycor or ycor <= max-pycor * 0.1)[
-      ask link-neighbors[
-       die
-      ]
-     die
-    ]
-  ]
-
-
-end
-
-
-to check_train_leave ; lets see if any trains need to leave
-  ask trains with [arriving = false][  ; if they have arrived and the number of ticks is greater than the hold time, start to leave
-    if ticks - stop-tick > train-hold-time [
-      set leaving true
-    ]
-  ]
+to init_person [pers]
+  set shape "person"
+  set color blue
+  set vulnerability  saturate_0_1 random-normal 0.5 0.125
+  set aesthetic saturate_0_1 random-normal 0.5 0.125
+  set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
+  set label-color black
+  set gait "walking"
 end
 
 
@@ -241,17 +37,7 @@ to arrive [t]
  ask min-one-of (patches with [patch-type = "platform"]) [distance myself][ ; get patches near the train where the passengers can disambark to
 
   sprout-passengers coming-off [ ; create the passengers that leave the train
-     set shape "person"
-     set color blue
-     set vulnerability (random-normal 0.5 0.125)
-      if vulnerability > 1 [set vulnerability 1]
-      if vulnerability < 0 [set vulnerability 0]
-     set aesthetic (random-normal 0.5 0.125)
-      if aesthetic > 1 [set aesthetic 1]
-      if aesthetic < 0 [set aesthetic 0]
-     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
-     set label-color black
-     set gait "walking"
+     init_person myself
      set-objective self ; set objective function called to set where they want to go
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
@@ -261,218 +47,13 @@ to arrive [t]
       ]
   ]
 
-
   ]
   set passenger-count passenger-count - coming-off ; adjust the counts
   set label passenger-count ; this label is the one shown on screen
 end
 
-; if we have added a carriage we need to update the carriage count on the train
-to update-carriage-count [added line]
-  if added[
-  ask trains with [arriving  = true and train-line-number = line][
-      set current-carriages current-carriages + 1
-        ]
-      ]
-
-end
 
 
-to add_carriages [line]
-  let added false ; have we added an extra carriage in this tick
-    ask trains with [arriving  = true and train-line-number = line][
-    let head heading - 180 ; this is the direction behind us
-   carefully [ ; this means we don't break if there are errors
-      let patch-behind patch-at-heading-and-distance head 2 ; we create a new carriage 2 patches behind us
-      if not added and current-carriages < max-carriages and not any? trains-on patch-behind and [patch-type] of patch-behind = "line" [
-       hatch 1 [ ; create new carriage (that has the same attributes as the current one)
-          set passenger-count random max_passengers_on_carriages_when_created; randomly assign the number of passengers
-          set label passenger-count
-          bk 2 ; move back two
-        ]
-      set added true ; we've added something
-    ]][ print "no room"]
-
-]
-
-  update-carriage-count added line
-
-end
-
-; if the train is yet to find a good place to stop
-to continue_arriving [line]
-
-  ask trains with [arriving = true and train-line-number = line] [ ; ask all trains still arriving
-   forward  1 ; move forward
-   let p-ahead patch-ahead 10 ; here we check that the patch 10 places ahead isn't a corridor or empty, if it is STOP
-    if p-ahead = nobody or [patch-type] of p-ahead = "corridor" [
-      ask trains with [arriving = true and train-line-number = line][ ; ask all the carriages to stop (arrive)
-        arrive myself
-        ]
-    ]
-  ]
-
-  add_carriages line ; add some carriages
-end
-
-
-; lets start the process of a train arriving
-to train_arrive [line_number no_carriages] ; what line and how many carriages
-    let start_x 0
-    let start_y 0
-    let head 0
-    ifelse (line_number mod 2 = 0)[ ; do we start from the top or the bottom
-      set start_x max [pxcor] of patches with [patch-type = "line" and number = line_number]
-      set start_x start_x - 2
-      set start_y max [pycor] of patches with [patch-type = "line" and number = line_number]
-      set head 180
-
-    ][
-       set start_x min [pxcor] of patches with [patch-type = "line" and number = line_number]
-       set start_y min [pycor] of patches with [patch-type = "line" and number = line_number]]
-       set start_x start_x + 1
-       ask patch start_x  start_y [ ; at the starting patch create a train
-       sprout-trains 1 [
-        set train-line-number  line_number
-        set max-carriages no_carriages
-        set current-carriages 0
-        set passenger-count max_passengers_on_carriages_when_created
-        set arriving true
-        set leaving false
-        set shape "truck"
-        set heading head ; which way it starts facing
-        set size 2
-        set label passenger-count ; lets label the number of passengers on the carriage
-      ]
-         ]
-
-end
-
-; building the station entrance and exit
-to build-entrance
-  ; we want to build it in the center of the map (y-cords) on the far right and fari left
-  ask patches with [(pxcor < 2 or pxcor > (max-pycor - 2)) and abs(pycor - max-pycor / 2) < 3][
-
-        set pcolor black
-
-        set patch-type "entrance"
-        ifelse pxcor < 2[
-      set number 1][set number 4]  ; what number platform is it on
-  ]
-end
-
-
-to build_benches [x_cordinate]
-  ask patches with [pxcor = round (x_cordinate) and patch-type = "platform"  and pycor < max-pycor - 5][
-
-    carefully[
-    if pycor mod 25 = 0[
-      set pcolor bench-col
-      ask patch-at 0 1 [
-        set pcolor bench-col
-      ]
-      ask patch-at 0 2[
-        set pcolor bench-col
-      ]
-    ]][print "oor"]
-
-  ]
-
-end
-
-
-; building a platform and connecting stairs
-to build-platform [patch-selected platform-number startx endx]
-  ask patch-selected [
-    if pxcor >= startx and pxcor <= endx [
-      ifelse (pycor >= min-pycor + stairs-size) [
-
-      set pcolor 4
-      set number platform-number
-      set patch-type "platform"
-    ][
-        set pcolor black
-
-        set patch-type "stairs"
-        set number platform-number
-      ]
-  ]]
-
-
-end
-
-; building the train line out of patches
-to build-line [patch-selected line-number startx endx]
-  ask patch-selected [
-   if pxcor >= startx and pxcor <= endx [
-     ifelse (pycor >= min-pycor + stairs-size) [
-     set pcolor red
-     set number line-number
-     set patch-type "line"
-    ] [
-
-        set pcolor black
-
-        set patch-type "corridor"
-        set number line-number
-      ]
-  ]]
-end
-
-to build-bench-set
-  build_benches (platform-size / 3)
-  build_benches (platform-size  + track-size / 2) + platform-size
-   build_benches (platform-size  + 3 * track-size / 2 ) + platform-size
-  build_benches (3 * platform-size + 2 * track-size) + platform-size / 3
-end
-
-
-; build the train station out of the patches
-to set-up-station
-  ask patches [
-    build-platform self 4 (max-pxcor - platform-size) max-pxcor ; self refers the the particular patch (pixel)
-
-    build-platform self 1 0 platform-size
-    build-platform self 2 (platform-size + 2 * track-size)  (platform-size + 3 * track-size)
-    build-platform self 3 (platform-size + 3 * track-size) (platform-size + 4 * track-size)
-    build-line self 1 platform-size (platform-size + track-size)
-    build-line self 2 (platform-size + track-size) (platform-size + 2 * track-size)
-    build-line self 3 (2 * platform-size + 2 * track-size) (2 * platform-size + 3 * track-size)
-    build-line self 4 (2 * platform-size + 3 * track-size) (2 * platform-size + 4 * track-size)
-  ]
-  build-entrance
-  build-bench-set
-
-  build-cameras
-end
-
-to create-camera [field dist x y head]
-  create-cameras 1 [ set ycor y set xcor x set heading head set fov field set dis dist]
-end
-
-to add-cameras
-  create-camera   65 1.5 * platform-size 0 max-pycor 145
-  create-camera   65 1.5 * platform-size 0 stairs-size 35
-  create-camera   65 1.5 * platform-size max-pxcor stairs-size 325
-  create-camera   65 1.5 * platform-size max-pxcor max-pycor 215
-end
-
-to build-cameras
-  add-cameras
-   ask cameras[
-    let d dis
-    let f fov
-   ask patches in-cone d f [
-      let col pcolor
-      let v [visibility] of patches
-      if v != true[
-       set pcolor pcolor + 2
-       set visibility true
-    ]
-  ]
-  ]
-
-end
 
 ; this is called when we are near the entrance and want to leave
 to try-and-exit [person p-num]
@@ -494,15 +75,7 @@ to add-new-passengers
     let no-entering (random average-arrival-number) + 1 ; randomly choose the number to enter
     ask n-of no-entering patches with [patch-type = "entrance"][  ; ask n of the patches that are entrance to create a passenger
      sprout-passengers 1 [
-     set shape "person"
-     set color white
-     set vulnerability (random-normal 0.5 0.125)
-      if vulnerability > 1 [set vulnerability 1]
-      if vulnerability < 0 [set vulnerability 0]
-     set aesthetic (random-normal 0.5 0.125)
-      if aesthetic > 1 [set aesthetic 1]
-      if aesthetic < 0 [set aesthetic 0]
-     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
+     init_person myself
      set gait "walking"
      set objective-number (random 4) + 1 ; a random platform they want to get on
      set label-color black
@@ -516,13 +89,12 @@ to add-new-passengers
   ]
 end
 
-
-
+; This needs to be looked at again, who-to-steal is global?
 to follow-target
   ask criminals [
-    let p-type [patch-type] of patch-here ; check the current patch type
-    let p-num [number] of patch-here ;check the current patch number
-    set victim-target passenger who-to-steal ;set golbal varialbe victim-target to who-to-steal input
+    let p-type [patch-type] of patch-here  ; check the current patch type
+    let p-num [number] of patch-here ; check the current patch number
+    set victim-target passenger who-to-steal ;set global varialbe victim-target to who-to-steal input
     let p-num-victim [[number]of patch-here] of victim-target ; chekc the current patch number of the victim-target
     set objective-number p-num-victim ; set cirminal's objective-number to the vitim's current location
     face victim-target ; set direction towards the target victim
@@ -535,6 +107,8 @@ to follow-target
   ]
 end
 
+
+; This needs relooking at, currently you are getting the money of all criminals not anyone in particular
 to steal-target
    let temp1 [money] of criminals ; set local variable temp1 to hold criminal's initial balance
    let temp2 [money] of victim-target; set local varialbe temp2 to hold victim's initial balance
@@ -548,113 +122,108 @@ end
 
 
 
-to go ; the main function called with each tick
-  ask passengers[
-    let p-type [patch-type] of patch-here
-    let p-num [number] of patch-here
-    let v [visibility] of patch-here
-    ifelse v = true[
-      set visible true
-      set seen true
-    ][set visible false]
-    if seen != true [set seen false]
-    ifelse p-num != objective-number or p-type != "platform" [ ; if we are not at the right platform or not on a platform
-       ifelse p-type = "entrance" and not wants-to-exit[ ; if we are on the entrance but don't want to leave
-        move-around-randomly self
-      ]
-      [
-       change-platform-step self  ; else we change to the correct platform
-    ]][
-      let line objective-number ; where we want to go
-      ifelse any? trains with [train-line-number = line and arriving = false and leaving = false][ ; if there is a train will let people on it
-        board-train self ; get on it
-      ][
+to-report on_the_right_plaform [pass p-num p-type]
+  report p-num != objective-number or p-type != "platform"
+end
+
+to-report not_at_entrance_and_want_to_leave [pass p-type]
+  report  p-type = "entrance" and not wants-to-exit
+end
+
+to-report able_to_get_on_train [line]
+  report any? trains with [train-line-number = line and arriving = false and leaving = false]
+end
+
+to-report can_exit [p-num p-type]
+  report wants-to-exit and p-num = objective-number and p-type != "corridor"
+end
+
+to passenger_turn_movement_decision [pass p-num p-type]
+      ifelse on_the_right_plaform self p-num p-type  [ ; if we are not at the right platform or not on a platform
+       ifelse not_at_entrance_and_want_to_leave self p-type  ; if we are on the entrance but don't want to leave
+        [move-around-randomly self]
+        [change-platform-step self]]  ; else we change to the correct platform
+       [
+        ifelse able_to_get_on_train objective-number [ ; if there is a train will let people on it
+          board-train self ; get on it
+       ][
         if gait = "walking" [
           try-and-find-a-place-to-sit self
         ]
-
-          ; move-around-randomly self
       ]]
-
-    if wants-to-exit and p-num = objective-number and p-type != "corridor"[ ; if we want to exit and are on at the right exit
+    if can_exit p-num p-type[ ; if we want to exit and are on at the right exit
       try-and-exit self p-num
-
     ]
+end
 
 
-    ifelse show-target-value?
-    [ set label round (aesthetic + vulnerability) ]
-    [ set label "" ]
+to criminal_turn_movement_decision [pass p-num p-type]
+      carefully[
+        follow-target
+        steal-target]
+   [move-around-randomly self]
+end
 
+
+; update if we have been seen
+to update_visability [pass vis]
+  ifelse vis = true[
+      set visible true
+      set seen true
+    ][set visible false]
+end
+
+
+to train_turn_movement_decision
+    let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
+    foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
+    check_train_leave ; check if any of the trains are due to leave
+    leaving_train_move ; keep leaving trains leaving
+     add-new-passengers ; maybe add some new passengers
+     train-arrivals-check
+end
+
+to go ; the main function called with each tick
+  ask passengers[
+    update_visability self ([visibility] of patch-here)
+    passenger_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
     ]
-
-
 
   ask securities[
-
     look self
-
     ifelse actioning = true[
-      ;go-to self max-pycor - 3 max-pxcor - 4
       go-to self 3 4
-    ][
-
+    ]
+    [
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
-    ifelse p-num != objective-number or p-type != "platform" [
-
+    ifelse on_the_right_plaform self p-num p-type[
       change-platform-step self
     ][
+      ; What is this >> ????
       ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
     ]
     ]
   ]
 
-
   ask criminals [
     let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
     look self
-    let v [visibility] of patch-here
-      ifelse v = true[
-        set visible true
-        set seen true
-      ][set visible false]
-    if seen != true [set seen false]
-
-    carefully[
-      follow-target
-        steal-target]
-   [move-around-randomly self]
+    update_visability self ([visibility] of patch-here)
+    criminal_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
   ]
 
-    let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
-    foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
-    check_train_leave ; check if any of the trains are due to leave
-    leaving_train_move ; keep leaving trains leaving
-    add-new-passengers ; maybe add some new passengers
+ train_turn_movement_decision
 
-  train-arrivals-check
   tick-advance 1 ; move time forward
 end
 
-to train-arrivals-check
-  if ticks mod train_1_arrival_tick = 0 [
-    train_arrive 1 number_of_carriages_train_1
-  ]
-  if ticks mod train_2_arrival_tick = 0 [
-    train_arrive 2 number_of_carriages_train_2
-  ]
-    if ticks mod train_3_arrival_tick = 0 [
-    train_arrive 3 number_of_carriages_train_3
-  ]
-    if ticks mod train_4_arrival_tick = 0 [
-    train_arrive 4 number_of_carriages_train_4
-  ]
 
+
+to-report saturate_0_1 [x]
+  report min list 1 (max list 0 x)
 end
-
-
 
 ; initialises the global variabels
 to set-up-globals
@@ -666,11 +235,7 @@ end
 
 ; creates an objective for a passenger leaving a train (arriving in the station)
 to set-objective [person]
-
-
   if [breed] of person = passengers[
-
-
   let rand random-float 1
      ifelse rand < 0.2[  ; if the random number is less than 2 then they are wanting to leave
       set color pink ; just to see them
@@ -701,15 +266,7 @@ end
 to init-people [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-passengers 1 [
-     set shape "person"
-     set color white
-     set vulnerability (random-normal 0.5 0.125)
-      if vulnerability > 1 [set vulnerability 1]
-      if vulnerability < 0 [set vulnerability 0]
-     set aesthetic (random-normal 0.5 0.125)
-      if aesthetic > 1 [set aesthetic 1]
-      if aesthetic < 0 [set aesthetic 0]
-     set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
+     init_person self
      set label-color black
      set gait "walking"
      set has-baggage (random-float 1 > percentage_with_bag)
@@ -724,135 +281,87 @@ end
 to init-security [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-securities 1 [
-     set shape "person"
+      init_person self
      set color yellow
      set-objective self
      set gait "walking"
      set has-baggage False
      set carrying-baggage False
      set seen-list []
-     set judgement (random-normal 0.1 0.025)
-      if judgement > 1 [set judgement 1]
-      if judgement < 0 [set judgement 0]
-     ;set actioning true
+     set judgement saturate_0_1 random-normal 0.5 0.125
     ]
     ]
 end
 
 
+to-report angle-to-quadrant [angle]
+  report floor( angle / 90 )
+end
+
+
+
+to-report  get_stored_angle_list [person properties]
+  report item 4 properties
+end
+
+to-report previous_predicted_vuln [properties]
+  report item 5 properties
+end
+
+to remove_person_from_lists [my-list pass-list pos]
+        ;now remove them from both lists
+        set my-list remove-item pos my-list
+        set pass-list remove-item pos pass-list
+end
+
+
+to-report add_person_details_to_memory [angle-list my-list]
+   ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
+        let angle get-angle myself self
+        set angle-list replace-item (angle-to-quadrant angle) angle-list 1
+
+        ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
+        let familiarity ((sum angle-list) + 1) * ([judgement] of myself)
+        let vuln saturate_0_1 (random-normal vulnerability familiarity)
+        ;now put values into the list along with the calculated values
+        set my-list lput (list self ticks xcor ycor angle-list vuln vulnerability) my-list
+
+        report my-list
+end
+
+
 to look [person]
 
-  ; get agentset of all turtles
-  let jointset (turtle-set securities criminals passengers)
-  ; remove self from agentset
-  set jointset jointset with [self != myself]
-
-  ; start looking function
+  ; get agentset of all turtles that are not me
+  let jointset (turtle-set securities criminals passengers) with [self != myself]
   ask person[
-   ;create local list -> so it can be used in the function
-   let my-list seen-list
-   ;initialise pass-list -> the list of passengers seen
-   let pass-list []
+   let my-list seen-list ;create local list -> so it can be used in the function
+   let pass-list [] ;initialise pass-list -> the list of passengers seen
 
-   ;ask all agents in field of view
-   ask jointset in-cone 25 60[
+   ask jointset in-cone 25 60[ ;ask all agents in field of view
 
-      ;go through the memory list create list of passengerIDs
+      ;go through the memory list create list of passengerIDs that we are looking at
       foreach my-list [[val]->
        set pass-list lput item 0 val pass-list
       ]
 
-      ;initialise the quadrant list
-      let angle-list [0 0 0 0]
+      let angle-list [0 0 0 0] ;initialise the quadrant list
+      let angle get-angle myself self
 
-      ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
-      ifelse member? self pass-list[
 
-        ;find their position and get their proprties and store them
-        let pos position self pass-list
+      if member? self pass-list[ ;  ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
+
+        let pos position self pass-list  ;find their position and get their properties and store them
         let properties item pos my-list
-
-        ;now remove them from both lists
-        set my-list remove-item pos my-list
-        set pass-list remove-item pos pass-list
-
-        ;get their angle list -> overwriting [0 0 0 0]
-        set angle-list item 4 properties
-
-        ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
-        let angle get-angle myself self
-          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
-          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
-          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
-                                               [ set angle-list replace-item 3 angle-list 1 ]
-          ]]
-
-        ;now get vulnerability of passenger -> initialise perceived vulnerability as this
-        let vuln vulnerability
-        ;get judgement of turtle calling 'look'
-        let judge [judgement] of myself
-        ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
-        let familiarity ((sum angle-list) + 1) * judge
-
-        ;this familiarity now refers to the std about the vulnerability
-        set vuln (random-normal vulnerability familiarity)
-        ;clipping
-        if vuln > 1 [set vuln 1]
-        if vuln < 0 [set vuln 0]
-
-        ;now put values into the list along with the calculated values
-        set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln) my-list
-
-        ][
-        ;person hasn't been seen before -> so now new memory needs to be created -> first check if list is less than 50
-        ifelse length my-list < 50[
-
-          ;not been seen before -> so function uses [0 0 0 0] for angle list initially
-          let angle get-angle myself self
-          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
-          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
-          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
-                                               [ set angle-list replace-item 3 angle-list 1 ]
-          ]]
-
-          ;same as in above condition
-          let vuln vulnerability
-          let judge [judgement] of myself
-          let familiarity ((sum angle-list) + 1) * judge
-
-          set vuln (random-normal vulnerability familiarity)
-          if vuln > 1 [set vuln 1]
-          if vuln < 0 [set vuln 0]
-
-          set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln ) my-list
-          let pos position self my-list
-        ][
-          ;memory list is 50 values in length so remove the earliest memory -> the first one
-          set my-list but-first my-list
-
-          ;same as in above condition
-          let angle get-angle myself self
-          ifelse angle > 0 and angle < 90      [ set angle-list replace-item 0 angle-list 1 ]
-          [ ifelse angle > 90 and angle < 180  [ set angle-list replace-item 1 angle-list 1 ]
-          [ ifelse angle > 180 and angle < 270 [ set angle-list replace-item 2 angle-list 1 ]
-                                               [ set angle-list replace-item 3 angle-list 1 ]
-          ]]
-          let vuln vulnerability
-          let judge [judgement] of myself
-          let familiarity ((sum angle-list) + 1) * judge
-
-          set vuln (random-normal vulnerability familiarity)
-          if vuln > 1 [set vuln 1]
-          if vuln < 0 [set vuln 0]
-
-          set my-list lput (list self ticks xcor ycor angle-list vulnerability vuln) my-list
+        let previous_vuln  (previous_predicted_vuln properties)
+        remove_person_from_lists my-list pass-list pos
         ]
-      ]
 
-  ; for each passenger returns list -> (personID   tick-last-seen   x-cor-last-seen   y-cor-last-seen   quadrant-list   actual-vulnerability   perceived-vulnerability)
-
-      ; -> std about vulnerability = sum of quadrant list multiplied by intrinsic std which is stored in the judgment parameter -> judgement is less than one so it should reduce as quadrant list increases
-
+        if length my-list >= 50[  ;memory list is 50 values in length so remove the earliest memory -> the first one
+          set my-list but-first my-list
+        ]
+          set angle-list replace-item (angle-to-quadrant angle) angle-list 1
+          set my-list add_person_details_to_memory angle-list my-list
   ]
   ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list
@@ -1003,7 +512,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -1574,7 +1083,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
