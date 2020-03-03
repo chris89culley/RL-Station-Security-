@@ -54,8 +54,46 @@ to stand [person]
   set gait "standing"
 end
 
+; this is called when we are near the entrance and want to leave
+to try-and-exit [person p-num]
+     ifelse any? patches with [patch-type = "entrance"] in-radius 2[
+       ask link-neighbors [
+     die ; remove suitcases
+
+    ]
+       die  ; if we are within 2 pixels of the entrance - leave (die)
+      ][ ; else we face the nearest entrance (we are already at the right platform at this point) and move towards it
+        face min-one-of patches with [patch-type = "entrance" and number = p-num] [distance myself]
+        move-forward 1 self]
+end
 
 
+to go-to [person x y]
+  let target patch x y
+  ask person [
+    let person-p-type [patch-type] of patch-here
+    let person-p-num [number] of patch-here
+    let target-p-type [patch-type] of target
+    let target-p-num [number] of target
+
+    set objective-number target-p-num ; set objective-number equal to the target
+    face target ; set direction towards the target
+
+    ifelse distance target > 1 [ ;if distance between the criminal and the target victim is more than 1
+
+      ifelse person-p-num != objective-number or person-p-type != target-p-type[
+
+        ifelse person-p-num != objective-number[
+          change-platform-step self][
+          move-towards-the-stairs self
+        ]
+      ][
+        forward 1
+    ]] ; go to the platform that target is on
+        [stop]
+    ; move one step forwards towards the victim
+  ]
+end
 
 to try-and-find-a-place-to-sit [person]
  let plat-num objective-number
@@ -193,3 +231,21 @@ to change-platform-step [person] ; lets try and change platform
      move-along-corridor person
 ]]]
 end
+
+
+to-report on_the_right_plaform [pass p-num p-type]
+  report p-num != objective-number or p-type != "platform"
+end
+
+to-report not_at_entrance_and_want_to_leave [pass p-type]
+  report  p-type = "entrance" and not wants-to-exit
+end
+
+to-report able_to_get_on_train [line]
+  report any? trains with [train-line-number = line and arriving = false and leaving = false]
+end
+
+to-report can_exit [p-num p-type]
+  report wants-to-exit and p-num = objective-number and p-type != "corridor"
+end
+

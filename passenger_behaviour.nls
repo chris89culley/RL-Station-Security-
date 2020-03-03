@@ -1,0 +1,17 @@
+to passenger_turn_movement_decision [pass p-num p-type]
+      ifelse on_the_right_plaform self p-num p-type  [ ; if we are not at the right platform or not on a platform
+       ifelse not_at_entrance_and_want_to_leave self p-type  ; if we are on the entrance but don't want to leave
+        [move-around-randomly self]
+        [change-platform-step self]]  ; else we change to the correct platform
+       [
+        ifelse able_to_get_on_train objective-number [ ; if there is a train will let people on it
+          board-train self ; get on it
+       ][
+        if gait = "walking" [
+          try-and-find-a-place-to-sit self
+        ]
+      ]]
+    if can_exit p-num p-type[ ; if we want to exit and are on at the right exit
+      try-and-exit self p-num
+    ]
+end

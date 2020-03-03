@@ -1,0 +1,37 @@
+; This needs to be looked at again, who-to-steal is global?
+to follow-target
+  ask criminals [
+    let p-type [patch-type] of patch-here  ; check the current patch type
+    let p-num [number] of patch-here ; check the current patch number
+    set victim-target passenger who-to-steal ;set global varialbe victim-target to who-to-steal input
+    let p-num-victim [[number]of patch-here] of victim-target ; chekc the current patch number of the victim-target
+    set objective-number p-num-victim ; set cirminal's objective-number to the vitim's current location
+    face victim-target ; set direction towards the target victim
+
+    ifelse p-num != objective-number or p-type != "platform" [  ; if criminal is on the wrong platform
+      ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
+        fd 1] ; forward 1
+      [change-platform-step myself]] ; change platform with objective-number as the vitim's current location
+    [fd 1] ;forward 1 towards the viticm if criminal is on the same platform as the victim
+  ]
+end
+
+
+; This needs relooking at, currently you are getting the money of all criminals not anyone in particular
+to steal-target
+   let temp1 [money] of criminals ; set local variable temp1 to hold criminal's initial balance
+   let temp2 [money] of victim-target; set local varialbe temp2 to hold victim's initial balance
+   let success-rate [vulnerability] of victim-target ; set local variable success-reate equal to global vulnerability of the victim
+   ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
+    ask criminals [set money temp1 + temp2 ; ask criminal to set money of temp1 + temp2
+      move-around-randomly myself] ;and start wondering around randomly
+    ask victim-target[set money 0]]; ask vitim to set money to 0
+  [ask criminals [move-around-randomly myself]] ;if fail to steal, move around randomly
+end
+
+to criminal_turn_movement_decision [pass p-num p-type]
+      carefully[
+        follow-target
+        steal-target]
+   [move-around-randomly self]
+end

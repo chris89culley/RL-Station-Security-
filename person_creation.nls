@@ -1,0 +1,86 @@
+; adds new passengers from the entrances
+to add-new-passengers
+  if (ticks mod ticks-per-arrival = 0)[ ; we do this every 'ticks per arrival' ticks
+    let no-entering (random average-arrival-number) + 1 ; randomly choose the number to enter
+    ask n-of no-entering patches with [patch-type = "entrance"][  ; ask n of the patches that are entrance to create a passenger
+     sprout-passengers 1 [
+     init_person myself
+     set gait "walking"
+     set objective-number (random 4) + 1 ; a random platform they want to get on
+     set label-color black
+     set has-baggage (random-float 1 < percentage_with_bag)
+     set carrying-baggage has-baggage
+
+     set wants-to-exit false ; if they have just entered they probably don't want to leave again
+    ]
+    link-baggage self one-of passengers-here
+    ]
+  ]
+end
+
+
+to link-baggage [patch_i person]
+   if [has-baggage] of person [
+    sprout-baggages 1[
+      set owner person
+      set shape "suitcase"
+      create-link-with person
+  ]]
+end
+
+to init_person [pers]
+  set shape "person"
+  set color blue
+  set vulnerability  saturate_0_1 random-normal 0.5 0.125
+  set aesthetic saturate_0_1 random-normal 0.5 0.125
+  set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
+  set label-color black
+  set gait "walking"
+end
+
+
+; creates the initial pool of passengers
+to init-people [number-to-place]
+  ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
+    sprout-passengers 1 [
+     init_person self
+     set label-color black
+     set gait "walking"
+     set has-baggage (random-float 1 > percentage_with_bag)
+     set carrying-baggage has-baggage
+     set-objective self ; set their objective
+
+    ]
+    link-baggage self one-of passengers-here
+    ]
+end
+
+to init-criminals
+  ask n-of number-of-criminals (patches with [patch-type = "platform"])[
+    sprout-criminals number-of-criminals [
+    set shape "person"
+    set color green
+    set money 0
+    set gait "walking"
+    set has-baggage False
+    set carrying-baggage False
+    set seen-list []
+    ]
+  ]
+end
+
+
+to init-security [number-to-place]
+  ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
+    sprout-securities 1 [
+      init_person self
+     set color yellow
+     set-objective self
+     set gait "walking"
+     set has-baggage False
+     set carrying-baggage False
+     set seen-list []
+     set judgement saturate_0_1 random-normal 0.5 0.125
+    ]
+    ]
+end
