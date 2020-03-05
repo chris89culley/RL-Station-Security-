@@ -39,14 +39,7 @@ to go ; the main function called with each tick
       go-to self 3 4
     ]
     [
-    let p-type [patch-type] of patch-here
-    let p-num [number] of patch-here
-    ifelse on_the_right_plaform self p-num p-type[
-      change-platform-step self
-    ][
-      ; What is this >> ????
-      ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
-    ]
+    patrol-step
     ]
   ]
 
@@ -710,7 +703,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

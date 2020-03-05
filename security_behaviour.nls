@@ -1,0 +1,15 @@
+;security_behaviour
+
+to patrol-step
+  
+  let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here
+    ifelse on_the_right_plaform self p-num p-type[
+      change-platform-step self
+    ][
+      ; What is this >> ????
+      ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
+    ]
+  
+  
+end
