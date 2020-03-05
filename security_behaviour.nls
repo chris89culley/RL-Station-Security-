@@ -2,6 +2,8 @@
 
 to patrol-step
   
+  look self
+  
   let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
     ifelse on_the_right_plaform self p-num p-type[

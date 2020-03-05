@@ -34,7 +34,6 @@ to go ; the main function called with each tick
     ]
 
   ask securities[
-    look self
     ifelse actioning = true[
       go-to self 3 4
     ]
