@@ -37,9 +37,7 @@ to go ; the main function called with each tick
     ifelse actioning = true[
       go-to self 3 4
     ]
-    [
-    patrol-step
-    ]
+    [patrol-step]
   ]
 
   ask criminals [
