@@ -6,7 +6,6 @@ to passenger_turn_movement_decision [pass p-num p-type]
        [
         ifelse able_to_get_on_train objective-number [ ; if there is a train will let people on it
           if (ticks > train_board_ticks )[
-            print train_board_ticks
         board-train self] ; get on it ]
         
        ][
