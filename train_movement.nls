@@ -24,6 +24,7 @@ to arrive [t]
  ask min-one-of (patches with [patch-type = "platform"]) [distance myself][ ; get patches near the train where the passengers can disambark to
   sprout-passengers coming-off [ ; create the passengers that leave the train
      init_person myself
+     set train_board_ticks (ticks + random 500)
      set-objective self ; set objective function called to set where they want to go
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage

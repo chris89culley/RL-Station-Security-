@@ -10,7 +10,7 @@ to add-new-passengers
      set label-color black
      set has-baggage (random-float 1 < percentage_with_bag)
      set carrying-baggage has-baggage
-
+     set train_board_ticks ticks + max list 0 random-normal 150 150
      set wants-to-exit false ; if they have just entered they probably don't want to leave again
     ]
     link-baggage self one-of passengers-here
@@ -41,6 +41,7 @@ end
 
 ; creates the initial pool of passengers
 to init-people [number-to-place]
+  print "init a person"
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-passengers 1 [
      init_person self
@@ -49,6 +50,7 @@ to init-people [number-to-place]
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
      set-objective self ; set their objective
+     set train_board_ticks ticks + max list 0 random-normal 150 150
 
     ]
     link-baggage self one-of passengers-here
