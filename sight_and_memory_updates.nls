@@ -32,7 +32,7 @@ to-report add_person_details_to_memory [angle-list my-list]
         report my-list
 end
 
-
+;maybe change to observe to it reads better?
 to look [person]
 
   ; get agentset of all turtles that are not me
@@ -69,7 +69,7 @@ to look [person]
   ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list
   ;print was used for debugging
-  ; print seen-list
+  print seen-list
   ]
 
 end
