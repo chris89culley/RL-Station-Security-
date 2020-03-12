@@ -1,0 +1,31 @@
+
+to checking-gait [person]
+   if (gait = "sitting" or gait = "standing")[
+       look self
+     ]
+end
+
+to engage-target [person target-properties]
+  
+  let targ-x item 2 target-properties
+  let targ-y item 3 target-properties
+  
+  go-to person targ-x targ-y
+  
+end
+
+
+
+;chooses a target (could simply pass target in at later date) and returns target with memorised properties
+to-report get-target-properties [person]
+  
+  let target-properties 0
+  
+  ask person[
+   if (length seen-list > 0) [
+      ;for now, first person 
+      set target-properties item 0 seen-list
+    ]
+  ]
+  report target-properties
+end

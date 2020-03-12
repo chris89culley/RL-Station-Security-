@@ -232,12 +232,6 @@ to change-platform-step [person] ; lets try and change platform
 ]]]
 end
 
-to checking-gait [person]
-   if (gait = "sitting" or gait = "standing")[
-       look self
-     ]
-end
-
 
 to-report on_the_right_plaform [pass p-num p-type]
   report p-num != objective-number or p-type != "platform"

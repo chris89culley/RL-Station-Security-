@@ -1,4 +1,4 @@
-__includes["train_movement.nls" "station_builder.nls" "person_movement.nls" "person_creation.nls" "security_behaviour.nls" "criminal_behaviour.nls" "passenger_behaviour.nls" "sight_and_memory_updates.nls" "objective_updates.nls" "utility.nls"]
+__includes["train_movement.nls" "station_builder.nls" "person_movement.nls" "person_creation.nls" "security_behaviour.nls" "criminal_behaviour.nls" "passenger_behaviour.nls" "sight_and_memory_updates.nls" "objective_updates.nls" "utility.nls" "security-criminal-shared-behaviour.nls"]
 
 extensions [array]
 
@@ -34,8 +34,12 @@ to go ; the main function called with each tick
     ]
 
   ask securities[
+
+    if (length seen-list > 3)[set actioning true]
+
     ifelse actioning = true[
-      go-to self 3 4
+      let target-props get-target-properties self
+      engage-target self target-props
     ]
     [patrol-step]
   ]
@@ -214,7 +218,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-1.0
+0.0
 1
 0
 Number
