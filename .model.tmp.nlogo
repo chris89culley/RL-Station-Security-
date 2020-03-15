@@ -373,7 +373,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 22) : leave;  (security 21) : 0;   ]
+[(criminal 25) : leave;  (security 24) : 0;   ]
 1
 1
 String

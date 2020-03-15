@@ -27,3 +27,13 @@ to set-objective-to-nearest-exit [person p-num]
   ]
 end 
   
+to-report update_current_objectives 
+  let objectives (list " ") 
+  ask securities[
+    set objectives append-word    (word self " : "  objective "; " ) objectives
+  ]
+  ask criminals [
+   set objectives append-word    (word self " : "  objective "; "  ) objectives
+  ]
+  report objectives 
+end
