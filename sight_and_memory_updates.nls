@@ -3,7 +3,6 @@ to-report angle-to-quadrant [angle]
 end
 
 
-
 to-report  get_stored_angle_list [person properties]
   report item 4 properties
 end
