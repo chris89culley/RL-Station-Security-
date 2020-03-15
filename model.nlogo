@@ -14,7 +14,7 @@ cameras-own [fov dis]
 securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning judgement vulnerability aesthetic money] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target judgement] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit visible seen seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -46,13 +46,10 @@ to go ; the main function called with each tick
 
   ask criminals [
 
-    let p-type [patch-type] of patch-here
-    let p-num [number] of patch-here
     update_visability self ([visibility] of patch-here)
+    print "callling crim"
     criminal_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
-
     checking-gait self
-
   ]
 
  train_turn_movement_decision
@@ -84,6 +81,9 @@ to set-up
 
   init-criminals
 end
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -136,7 +136,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -218,7 +218,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-0.0
+1.0
 1
 0
 Number
@@ -354,6 +354,17 @@ chance-of-forget-bag
 1
 0
 Number
+
+INPUTBOX
+989
+633
+1138
+693
+criminal_init_objective
+leave
+1
+0
+String
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -707,7 +718,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

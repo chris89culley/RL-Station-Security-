@@ -225,6 +225,7 @@ to change-platform-step [person] ; lets try and change platform
       if ([breed] of person = passengers) [set objective "board-train"]
     ]
   ][ ifelse p-type = "stairs" [ ; if we are on the stairs, lets move along the corridor
+      
      move-along-corridor person
   ]
   [if p-type = "corridor" [ ; if we are on a corridor, keep going down it

@@ -17,6 +17,7 @@ to follow-target
 end
 
 
+
 ; This needs relooking at, currently you are getting the money of all criminals not anyone in particular
 to steal-target
    let temp1 [money] of criminals ; set local variable temp1 to hold criminal's initial balance
@@ -29,9 +30,31 @@ to steal-target
   [ask criminals [move-around-randomly myself]] ;if fail to steal, move around randomly
 end
 
+
 to criminal_turn_movement_decision [pass p-num p-type]
-      carefully[
+   carefully[
+        if objective = "leave" [
+      print "trying to leave"
+      set-objective-to-nearest-exit pass p-num
+      leave-objective pass p-num p-type
+      ]
+      if objective = "steal_from_target"[
         follow-target
         steal-target]
-   [move-around-randomly self]
+      if objective = "explore" [
+      move-around-randomly self
+  ]][
+    print "there is an error"
+    move-around-randomly self
+  ]
 end
+
+to leave-objective [person p-num p-type]
+  ifelse p-num != objective-number or p-type = "stairs" [
+    print "changing platform"
+    change-platform-step person 
+  ][
+    try-and-exit person p-num
+  ]  
+  
+end 

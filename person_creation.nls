@@ -67,6 +67,7 @@ to init-criminals
     set has-baggage False
     set carrying-baggage False
     set seen-list []
+    set objective criminal_init_objective
     ]
   ]
 end

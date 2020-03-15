@@ -16,3 +16,14 @@ to set-objective [person]
   if [breed] of person = securities[set objective-number (random 4) + 1]
 
 end
+
+
+
+to set-objective-to-nearest-exit [person p-num]
+  ifelse p-num >= 3[
+    set objective-number 4
+  ][
+   set objective-number 1 
+  ]
+end 
+  
