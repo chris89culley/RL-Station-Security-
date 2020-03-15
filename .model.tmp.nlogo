@@ -11,10 +11,10 @@ breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic money] ; features that security can be given
+securities-own [objective objective-number at-platform moving seen-list has-baggage carrying-baggage gait actioning judgement vulnerability aesthetic money] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability] ; features that criminals can be given
+criminals-own [ objective objective-number money wants-to-exit visible seen aestheticseen-list has-baggage carrying-baggage gait victim-target judgement vulnerability] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -372,7 +372,7 @@ INPUTBOX
 157
 454
 objective-label
-[(security 21) : 0;   ]
+[(criminal 22) : leave;  (security 21) : 0;   ]
 1
 1
 String
