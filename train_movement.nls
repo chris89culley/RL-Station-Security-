@@ -84,7 +84,7 @@ to add_carriages [line]
           bk 2 ; move back two
         ]
       set added true ; we've added something
-    ]][ print "no room"]
+    ]][ let x 0]
 
 ]
 

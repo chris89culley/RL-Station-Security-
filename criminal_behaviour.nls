@@ -34,7 +34,6 @@ end
 to criminal_turn_movement_decision [pass p-num p-type]
    carefully[
         if objective = "leave" [
-      print "trying to leave"
       set-objective-to-nearest-exit pass p-num
       leave-objective pass p-num p-type
       ]
@@ -44,14 +43,12 @@ to criminal_turn_movement_decision [pass p-num p-type]
       if objective = "explore" [
       move-around-randomly self
   ]][
-    print "there is an error"
-    move-around-randomly self
+    print "there is an error in criminal movement"
   ]
 end
 
 to leave-objective [person p-num p-type]
   ifelse p-num != objective-number or p-type = "stairs" [
-    print "changing platform"
     change-platform-step person 
   ][
     try-and-exit person p-num

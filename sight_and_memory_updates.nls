@@ -26,8 +26,9 @@ to-report add_person_details_to_memory [angle-list my-list]
         ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
         let familiarity ((sum angle-list) + 1) * ([judgement] of myself)
         let vuln saturate_0_1 (random-normal vulnerability familiarity)
+        let pred_weight saturate_0_1 (random-normal aesthetic familiarity)
         ;now put values into the list along with the calculated values
-        set my-list lput (list self ticks xcor ycor angle-list vuln vulnerability) my-list
+        set my-list lput (list self ticks xcor ycor angle-list vuln pred_weight familiarity ) my-list
         report my-list
 end
 
@@ -50,9 +51,7 @@ to look [person]
       let angle-list [0 0 0 0] ;initialise the quadrant list
       let angle get-angle myself self
 
-
       if member? self pass-list[ ;  ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
-
         let pos position self pass-list  ;find their position and get their properties and store them
         let properties item pos my-list
         let previous_vuln  (previous_predicted_vuln properties)
