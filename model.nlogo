@@ -350,7 +350,7 @@ INPUTBOX
 1307
 520
 chance-of-forget-bag
-0.001
+1.0E-4
 1
 0
 Number
@@ -372,7 +372,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 25) : explore;  (security 24) : 0;   ]
+[(criminal 23) : explore;  (security 22) : 0;   ]
 1
 1
 String
