@@ -45,7 +45,10 @@ to criminal_turn_movement_decision [pass target p-num p-type]
       ]
       if objective = "steal_from_target"[
         follow-target self target
-        steal-target self target ]
+        steal-target self target 
+    ;    follow-target self passenger who-to-steal  
+  
+    ]
       if objective = "explore" [
       move-around-randomly self
   ]][

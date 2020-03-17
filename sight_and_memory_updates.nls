@@ -11,12 +11,6 @@ to-report previous_predicted_vuln [properties]
   report item 5 properties
 end
 
-to remove_person_from_lists [my-list pass-list pos]
-        ;now remove them from both lists
-        set my-list remove-item pos my-list
-        set pass-list remove-item pos pass-list
-end
-
 
 to-report add_person_details_to_memory [angle-list my-list]
    ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
@@ -28,8 +22,19 @@ to-report add_person_details_to_memory [angle-list my-list]
         let vuln saturate_0_1 (random-normal vulnerability familiarity)
         let pred_weight saturate_0_1 (random-normal aesthetic familiarity)
         ;now put values into the list along with the calculated values
-        set my-list lput (list self ticks xcor ycor angle-list vuln pred_weight familiarity ) my-list
+  
+        set my-list lput (list self ticks (precision xcor 1) (precision ycor 1) angle-list (precision vuln 2) (precision pred_weight 2) (precision familiarity 2)) my-list
+  
         report my-list
+end
+
+to-report check-and-move-security-memory [my-list]
+  let to-be-removed item 0 my-list
+  let person item 0 to-be-removed 
+  if  is-security? person [ 
+         set my-list replace-item 1 my-list to-be-removed
+        ]
+  report my-list
 end
 
 ;maybe change to observe to it reads better?
@@ -45,7 +50,12 @@ to look [person]
 
       ;go through the memory list create list of passengerIDs that we are looking at
       foreach my-list [[val]->
-       set pass-list lput item 0 val pass-list
+        let person_memory item 0 val
+        ifelse  person_memory = nobody[
+          set my-list remove val my-list
+        ][
+          set pass-list lput item 0 val pass-list
+        ]
       ]
 
       let angle-list [0 0 0 0] ;initialise the quadrant list
@@ -55,11 +65,14 @@ to look [person]
         let pos position self pass-list  ;find their position and get their properties and store them
         let properties item pos my-list
         let previous_vuln  (previous_predicted_vuln properties)
-        remove_person_from_lists my-list pass-list pos
+        set my-list remove-item pos my-list
+        set pass-list remove-item pos pass-list
         ]
 
         if length my-list >= 50[  ;memory list is 50 values in length so remove the earliest memory -> the first one
-          set my-list but-first my-list
+          set my-list check-and-move-security-memory my-list
+          set my-list but-first my-list 
+          
         ]
           set angle-list replace-item (angle-to-quadrant angle) angle-list 1
           set my-list add_person_details_to_memory angle-list my-list
