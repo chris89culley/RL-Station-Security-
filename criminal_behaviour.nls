@@ -1,45 +1,51 @@
-; This needs to be looked at again, who-to-steal is global?
-to follow-target
-  ask criminals [
-    let p-type [patch-type] of patch-here  ; check the current patch type
-    let p-num [number] of patch-here ; check the current patch number
-    set victim-target passenger who-to-steal ;set global varialbe victim-target to who-to-steal input
-    let p-num-victim [[number]of patch-here] of victim-target ; chekc the current patch number of the victim-target
-    set objective-number p-num-victim ; set cirminal's objective-number to the vitim's current location
-    face victim-target ; set direction towards the target victim
 
-    ifelse p-num != objective-number or p-type != "platform" [  ; if criminal is on the wrong platform
-      ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
-        fd 1] ; forward 1
-      [change-platform-step myself]] ; change platform with objective-number as the vitim's current location
-    [fd 1] ;forward 1 towards the viticm if criminal is on the same platform as the victim
+to follow-target [person target]
+  ask person [
+    let p-type [patch-type] of patch-here  ; set the current patch type
+    let p-num [number] of patch-here ; set the current patch number
+    let target-p-type [[patch-type] of patch-here] of target ; set the current patch type of target
+    
+    ifelse (p-type = target-p-type) or (p-type = "stairs" and target-p-type = "corridor") or (p-type = "corridor" and target-p-type = "stairs")[
+      set heading towards target ;if on the same patch type or on stairs and corridor, set heading to target and forward 1
+      fd 1]
+    [ifelse (p-type = "platform" and target-p-type = "stairs" and [ycor] of target < ycor) or (p-type = "platform" and target-p-type = "corridor" and [ycor] of target < ycor) [
+      set heading 180 ;if on platform and target is on stairs or corridor, move south by 1 until ycors are the same
+      fd 1] 
+      [ifelse p-type = "stairs" or p-type = "corridor"[ 
+        ifelse [xcor] of target < xcor [ ; if on stairs or corridorand xcor of the target is smaller
+          set heading 270 ; move west by 1 until xcors are the same
+          fd 1] 
+        [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
+          fd 1]] 
+       [ifelse [xcor] of target > xcor [ ; if on stairs or corridorand xcor of the target is larger
+          set heading 90 ; move east by 1 until xcors are the same
+          fd 1] 
+          [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
+            fd 1]] 
+    ]]
   ]
 end
 
 
-
-; This needs relooking at, currently you are getting the money of all criminals not anyone in particular
-to steal-target
-   let temp1 [money] of criminals ; set local variable temp1 to hold criminal's initial balance
-   let temp2 [money] of victim-target; set local varialbe temp2 to hold victim's initial balance
-   let success-rate [vulnerability] of victim-target ; set local variable success-reate equal to global vulnerability of the victim
+to steal-target [ person target ]
+   let temp1 [money] of person ; set local variable temp1 to hold criminal's initial balance
+   let success-rate [vulnerability] of target ; set local variable success-reate equal to global vulnerability of the victim
    ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
-    ask criminals [set money temp1 + temp2 ; ask criminal to set money of temp1 + temp2
-      move-around-randomly myself] ;and start wondering around randomly
-    ask victim-target[set money 0]]; ask vitim to set money to 0
-  [ask criminals [move-around-randomly myself]] ;if fail to steal, move around randomly
+   ask person [set money temp1 + [money] of target] ; ask criminal to set money of temp1 + temp2
+    ask target[set money 0]]; ask vitim to set money to 0
+  [ask person [move-around-randomly myself]] ;if fail to steal, move around randomly
 end
 
 
-to criminal_turn_movement_decision [pass p-num p-type]
+to criminal_turn_movement_decision [pass target p-num p-type]
    carefully[
         if objective = "leave" [
       set-objective-to-nearest-exit pass p-num
       leave-objective pass p-num p-type
       ]
       if objective = "steal_from_target"[
-        follow-target
-        steal-target]
+        follow-target self target
+        steal-target self target ]
       if objective = "explore" [
       move-around-randomly self
   ]][
