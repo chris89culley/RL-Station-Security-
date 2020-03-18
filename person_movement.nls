@@ -234,6 +234,41 @@ to change-platform-step [person] ; lets try and change platform
 end
 
 
+to face-target-forward-one [person target]
+  ask person[
+    set heading towards target
+    fd 1
+  ]
+end
+
+to face-south-forward-one [person]
+  ask person[
+    set heading 180
+    fd 1
+  ]
+end
+
+to face-east-forward-one [person]
+  ask person[
+    set heading 90
+    fd 1
+  ]
+end
+
+to face-west-forward-one [person]
+  ask person[
+    set heading 270
+    fd 1
+  ]
+end
+
+to face-north-forward-one [person]
+  ask person[
+    set heading 0
+    fd 1
+  ]
+end
+
 to-report on_the_right_plaform [pass p-num p-type]
   report p-num != objective-number or p-type != "platform"
 end
@@ -248,5 +283,13 @@ end
 
 to-report can_exit [p-num p-type]
   report wants-to-exit and p-num = objective-number and p-type != "corridor"
+end
+
+to-report follow_on_the_same_platform_or_stairs_and_corridor [pass p-type target-p-type]
+  report (p-type = target-p-type) or (p-type = "stairs" and target-p-type = "corridor") or (p-type = "corridor" and target-p-type = "stairs")
+end
+
+to-report follow_from_platform_to_target_on_stairs_or_corridor [pass target p-type target-p-type]
+  report (p-type = "platform" and target-p-type = "stairs" and [ycor] of target < ycor) or (p-type = "platform" and target-p-type = "corridor" and [ycor] of target < ycor)
 end
 

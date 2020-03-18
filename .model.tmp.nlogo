@@ -80,7 +80,7 @@ to set-up
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
 
-  init-security 1
+  init-security 0
 
   init-criminals
 end

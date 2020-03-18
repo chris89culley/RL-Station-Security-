@@ -1,27 +1,25 @@
-
+;only call follow-target when target is in field of view
 to follow-target [person target]
   ask person [
     let p-type [patch-type] of patch-here  ; set the current patch type
-    let p-num [number] of patch-here ; set the current patch number
     let target-p-type [[patch-type] of patch-here] of target ; set the current patch type of target
     
-    ifelse (p-type = target-p-type) or (p-type = "stairs" and target-p-type = "corridor") or (p-type = "corridor" and target-p-type = "stairs")[
-      set heading towards target ;if on the same patch type or on stairs and corridor, set heading to target and forward 1
-      fd 1]
-    [ifelse (p-type = "platform" and target-p-type = "stairs" and [ycor] of target < ycor) or (p-type = "platform" and target-p-type = "corridor" and [ycor] of target < ycor) [
-      set heading 180 ;if on platform and target is on stairs or corridor, move south by 1 until ycors are the same
-      fd 1] 
+    ifelse follow_on_the_same_platform_or_stairs_and_corridor self p-type target-p-type [
+      face-target-forward-one self target] ;if on the same patch type or on stairs and corridor, set heading to target and forward 1
+    
+    [ifelse follow_from_platform_to_target_on_stairs_or_corridor self target p-type target-p-type [
+      face-south-forward-one self] ;if on platform and target is on stairs or corridor, move south by 1 until ycors are the same 
       [ifelse p-type = "stairs" or p-type = "corridor"[ 
+        
         ifelse [xcor] of target < xcor [ ; if on stairs or corridorand xcor of the target is smaller
-          set heading 270 ; move west by 1 until xcors are the same
-          fd 1] 
-        [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
-          fd 1]] 
+          face-west-forward-one self] ; move west by 1 until xcors are the same
+        
+        [face-target-forward-one self target]] ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
+        
        [ifelse [xcor] of target > xcor [ ; if on stairs or corridorand xcor of the target is larger
-          set heading 90 ; move east by 1 until xcors are the same
-          fd 1] 
-          [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
-            fd 1]] 
+          face-east-forward-one self] ; move east by 1 until xcors are the same
+          
+          [face-target-forward-one self target]] ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1 
     ]]
   ]
 end
@@ -34,6 +32,36 @@ to steal-target [ person target ]
    ask person [set money temp1 + [money] of target] ; ask criminal to set money of temp1 + temp2
     ask target[set money 0]]; ask vitim to set money to 0
   [ask person [move-around-randomly myself]] ;if fail to steal, move around randomly
+end
+
+to leave-objective [person p-num p-type]
+  ifelse p-num != objective-number or p-type = "stairs" [
+    change-platform-step person 
+  ][
+    try-and-exit person p-num
+  ]  
+  
+end 
+
+;Yang is still working on it...
+to explore-station [person]
+  ask person[
+    let p-num [number] of patch-here
+    let p-type [patch-type] of patch-here
+    
+    ifelse max-pycor * 0.9 > ycor [
+      face-north-forward-one self
+    face-south-forward-one self]
+    
+    [move-towards-the-stairs self]
+    
+    ifelse max-pycor * 0.9 = ycor [
+      move-towards-the-stairs self]
+    [face-north-forward-one self]
+     
+   
+  ]
+  
 end
 
 
@@ -50,17 +78,10 @@ to criminal_turn_movement_decision [pass target p-num p-type]
   
     ]
       if objective = "explore" [
-      move-around-randomly self
+      explore-station self
   ]][
     print "there is an error in criminal movement"
   ]
 end
 
-to leave-objective [person p-num p-type]
-  ifelse p-num != objective-number or p-type = "stairs" [
-    change-platform-step person 
-  ][
-    try-and-exit person p-num
-  ]  
-  
-end 
+
