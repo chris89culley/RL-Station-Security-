@@ -5,27 +5,35 @@ to checking-gait [person]
      ]
 end
 
+; not used at the moment, as it's essentially just spinning around on the spot...
 to look-for-target [person]
   set heading heading + 20
 end 
 
-to search-for-target [person target-properties]
+;working title... as it's something between searching and engaging
+to search-for-target [person target]
   
+  ;look updates positions - namely that of the target  
   look self
-  
-  let target item 0 target-properties
-  
-  print(target)
-  
+  ;gets the properties of the target
+  let target-properties get-target-properties self target
+  ;get the last known positions of the target
   let targ-x item 2 target-properties
   let targ-y item 3 target-properties
   
-  let agents-in-view (turtle-set passengers criminals securities) 
+  ;if in the area of the target stop. Temporary, we can add apprehend or something at a later date.
+  if (xcor < targ-x + 2 and xcor > targ-x - 2 and ycor < targ-y + 2 and ycor > targ-y - 2) [
+    print "action complete"
+    ;actioning is security specific - add a condition if you're using this Yang
+    set actioning false
+    stop
+  ]  
   
-  set agents-in-view (turtle-set agents-in-view in-cone 25 60) with [self != myself]
+  ;if not in the area of the target - get a list of agents in view - excluding yourself
+  let agents-in-view (turtle-set passengers criminals securities)  
+  set agents-in-view (turtle-set agents-in-view in-cone 50 60) with [self != myself]
   
-  print(agents-in-view)
-  
+  ;if target in view, follow, if not go to last known position
   ifelse (member? target agents-in-view)[
     follow-target self target
   ][go-to person targ-x targ-y]
@@ -33,24 +41,36 @@ to search-for-target [person target-properties]
 end
 
 to-report get-target [person]
-
-  let target 0
-  if (length seen-list > 0) [
-      ;for now, first person 
-      set target item 0 seen-list
+  ;gets a list of agents in view -> This is done a lot, so maybe I could make a function similar to look that returns this? 
+  let target-list []
+  foreach seen-list [[val]->
+    let person_memory item 0 val
+    set target-list lput item 0 val target-list  
     ]
-  ]
-report target item 0
+  ;Set target, and return it, for now set target to the last person seen
+  let target last target-list
+  report target 
 end
 
 ;chooses a target (could simply pass target in at later date) and returns target with memorised properties
 to-report get-target-properties [person target]
   
+  ;initialise target properties
   let target-properties 0
   
+  ;get position of the target in the seen list 
+  let target-list []
+  foreach seen-list [[val]->
+    let person_memory item 0 val
+    set target-list lput item 0 val target-list  
+  ]
+  let pos position target target-list
+  
+  ;not sure why I put this in an ask function.. but it sets the target properties to those in the same position as the target in target-list
   ask person[
-      set target-properties item 0 seen-list
+      set target-properties item pos seen-list
   ]
   
+  ;returns the properties for the search-for-target function (renamed from engage-target) 
   report target-properties
 end
