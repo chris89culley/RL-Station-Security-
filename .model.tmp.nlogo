@@ -36,11 +36,14 @@ to go ; the main function called with each tick
     ]
 
   ask securities[
-
+    ;only action once, when list is 2, obviously this condition will change
     if (length seen-list = 2)[set actioning true]
 
+    ;if actioning go to target, if not, patrol
     ifelse actioning = true[
+      ;get target
       let target get-target self
+      ;if target is alive go into search for target, if dead just look -> this is probably on of the reasons the security stops
       ifelse(is-turtle? target)[search-for-target self target][look self]
 
     ]
@@ -51,7 +54,7 @@ to go ; the main function called with each tick
 
     update_visability self ([visibility] of patch-here)
     criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
-    ;follow-target self passenger who-to-steal
+
     checking-gait self
   ]
 
@@ -137,7 +140,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -197,7 +200,7 @@ INPUTBOX
 118
 333
 who-to-steal
-8.0
+4.0
 1
 0
 Number
@@ -219,7 +222,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-0.0
+1.0
 1
 0
 Number
@@ -373,10 +376,21 @@ INPUTBOX
 157
 454
 objective-label
-[(security 23) : 0;   ]
+[(criminal 22) : explore;  (security 21) : 0;   ]
 1
 1
 String
+
+INPUTBOX
+1143
+631
+1292
+691
+platform-number-explore
+2.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -54,7 +54,6 @@ to go ; the main function called with each tick
 
     update_visability self ([visibility] of patch-here)
     criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
-    ;follow-target self passenger who-to-steal
     checking-gait self
   ]
 
@@ -140,7 +139,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -200,7 +199,7 @@ INPUTBOX
 118
 333
 who-to-steal
-8.0
+4.0
 1
 0
 Number
@@ -222,7 +221,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-0.0
+1.0
 1
 0
 Number
@@ -376,10 +375,21 @@ INPUTBOX
 157
 454
 objective-label
-[(security 22) : 0;   ]
+[(criminal 22) : explore;  (security 21) : 0;   ]
 1
 1
 String
+
+INPUTBOX
+1143
+631
+1292
+691
+platform-number-explore
+2.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -211,15 +211,15 @@ to change-platform-step [person] ; lets try and change platform
     ifelse (p-num != objective-number) [  ; if this is the wrong platform
       ifelse p-num = 2 and objective-number = 3 or p-num = 3 and objective-number = 2 [ ; if we should be on 3 but are on 2 etc, we dont need to go to the stairs
         if (gait = "walking") [
-          if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
+          if ([breed] of person != securities) or ([breed] of person != criminals) [try-and-find-a-place-to-sit person]
         ]
       ;  move-around-randomly person
-        if ([breed] of person = passengers) [set objective "board-train"]
+        if ([breed] of person = passengers) or ([breed] of person != criminals) [set objective "board-train"]
       ][ ; else we need to go to the stairs
     move-towards-the-stairs person
     ]][ ; else (i.e we are at the wrong objective number) we need to go to the stairs
       if (gait = "walking") [
-        if ([breed] of person != securities) [try-and-find-a-place-to-sit person]
+        if ([breed] of person != securities) or ([breed] of person != criminals) [try-and-find-a-place-to-sit person]
       ]
      ; move-around-randomly person
       if ([breed] of person = passengers) [set objective "board-train"]

@@ -43,23 +43,18 @@ to leave-objective [person p-num p-type]
   
 end 
 
-;Yang is still working on it...
-to explore-station [person]
+
+to explore-station [person platform-number] ; pass in the objective platform that crimanl needs to explore
   ask person[
-    let p-num [number] of patch-here
-    let p-type [patch-type] of patch-here
+    let p-num [number] of patch-here ;set the current platform number of the patch here
+    let p-type [patch-type] of patch-here ; set the type of patch here
+    set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
     
-    ifelse max-pycor * 0.9 > ycor [
-      face-north-forward-one self
-    face-south-forward-one self]
-    
-    [move-towards-the-stairs self]
-    
-    ifelse max-pycor * 0.9 = ycor [
-      move-towards-the-stairs self]
-    [face-north-forward-one self]
-     
-   
+    ifelse p-num != objective-number[ ; if on the wrong platform
+    change-platform-step self] ; change platform to the correcto ne
+    [ifelse max-pycor * random-float 1 > ycor and p-type = "platform"[ ; randomply generate how far criminal should explore along the platform
+    face-north-forward-one self] ; keep moving down the platform
+      [move-around-randomly self]] ; once meet the randomly generated depth of the platform, move around randomly
   ]
   
 end
@@ -73,12 +68,11 @@ to criminal_turn_movement_decision [pass target p-num p-type]
       ]
       if objective = "steal_from_target"[
         follow-target self target
-        steal-target self target 
-    ;    follow-target self passenger who-to-steal  
+        steal-target self target  
   
     ]
       if objective = "explore" [
-      explore-station self
+      explore-station self platform-number-explore
   ]][
     print "there is an error in criminal movement"
   ]
