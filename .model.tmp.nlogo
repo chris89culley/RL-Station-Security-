@@ -37,11 +37,12 @@ to go ; the main function called with each tick
 
   ask securities[
 
-    if (length seen-list > 3)[set actioning true]
+    if (length seen-list = 2)[set actioning true]
 
     ifelse actioning = true[
-      let target-props get-target-properties self
-      engage-target self target-props
+      let target get-target self
+      ifelse(is-turtle? target)[search-for-target self target][look self]
+
     ]
     [patrol-step]
   ]
@@ -80,7 +81,7 @@ to set-up
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
 
-  init-security 0
+  init-security 1
 
   init-criminals
 end
@@ -136,7 +137,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -218,7 +219,7 @@ INPUTBOX
 1107
 509
 number-of-criminals
-1.0
+0.0
 1
 0
 Number
@@ -372,7 +373,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 20) : explore;   ]
+[(security 23) : 0;   ]
 1
 1
 String

@@ -5,27 +5,52 @@ to checking-gait [person]
      ]
 end
 
-to engage-target [person target-properties]
+to look-for-target [person]
+  set heading heading + 20
+end 
+
+to search-for-target [person target-properties]
+  
+  look self
+  
+  let target item 0 target-properties
+  
+  print(target)
   
   let targ-x item 2 target-properties
   let targ-y item 3 target-properties
   
-  go-to person targ-x targ-y
+  let agents-in-view (turtle-set passengers criminals securities) 
+  
+  set agents-in-view (turtle-set agents-in-view in-cone 25 60) with [self != myself]
+  
+  print(agents-in-view)
+  
+  ifelse (member? target agents-in-view)[
+    follow-target self target
+  ][go-to person targ-x targ-y]
   
 end
 
+to-report get-target [person]
 
+  let target 0
+  if (length seen-list > 0) [
+      ;for now, first person 
+      set target item 0 seen-list
+    ]
+  ]
+report target item 0
+end
 
 ;chooses a target (could simply pass target in at later date) and returns target with memorised properties
-to-report get-target-properties [person]
+to-report get-target-properties [person target]
   
   let target-properties 0
   
   ask person[
-   if (length seen-list > 0) [
-      ;for now, first person 
       set target-properties item 0 seen-list
-    ]
   ]
+  
   report target-properties
 end
