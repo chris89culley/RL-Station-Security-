@@ -37,7 +37,7 @@ to go ; the main function called with each tick
 
   ask securities[
 
-    if (length seen-list > 2)[set actioning true]
+    if (length seen-list = 2)[set actioning true]
 
     ifelse actioning = true[
       let target get-target self
@@ -137,7 +137,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -373,7 +373,7 @@ INPUTBOX
 157
 454
 objective-label
-[(security 23) : 0;   ]
+[(security 22) : 0;   ]
 1
 1
 String
