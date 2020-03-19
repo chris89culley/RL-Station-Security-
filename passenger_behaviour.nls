@@ -17,3 +17,20 @@ to passenger_turn_movement_decision [pass p-num p-type]
       try-and-exit self p-num
     ]
 end
+
+; high vuln = 1 low = 0 
+to decide-on-concern-level-and-whether-to-make-security-aware [pass concerned-about angles-seen-from]
+  let prob 0.01 * (1 - vulnerability) + 0.01 * angles-seen-from
+  if random-float 1 < prob [
+    call-in-concern pass concerned-about
+  ]
+  
+end 
+
+
+to call-in-concern [pass concerned-about] 
+  print "MAKING SECURITY AWARE" 
+  print concerned-about 
+  print [xcor] of pass 
+  print [ycor] of pass 
+end

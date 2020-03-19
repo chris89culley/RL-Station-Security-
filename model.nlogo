@@ -49,7 +49,8 @@ to go ; the main function called with each tick
   ask criminals [
 
     update_visability self ([visibility] of patch-here)
-    criminal_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
+    criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
+    ;follow-target self passenger who-to-steal
     checking-gait self
   ]
 
@@ -83,7 +84,6 @@ to set-up
 
   init-criminals
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -136,7 +136,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -196,7 +196,7 @@ INPUTBOX
 118
 333
 who-to-steal
-4.0
+8.0
 1
 0
 Number
@@ -350,7 +350,7 @@ INPUTBOX
 1307
 520
 chance-of-forget-bag
-0.001
+1.0E-4
 1
 0
 Number
@@ -361,7 +361,7 @@ INPUTBOX
 1138
 693
 criminal_init_objective
-leave
+explore
 1
 0
 String
@@ -372,7 +372,7 @@ INPUTBOX
 157
 454
 objective-label
-[(security 21) : 0;   ]
+[(criminal 23) : explore;  (security 22) : 0;   ]
 1
 1
 String
@@ -729,7 +729,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
