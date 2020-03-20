@@ -43,18 +43,48 @@ to leave-objective [person p-num p-type]
   
 end 
 
+to walk-to-north-end-platform [pass xcor-here]
+  let destination-north patch xcor-here max-pycor
+  
+  set heading towards destination-north
+  fd 1
+end 
 
-to explore-station [person platform-number] ; pass in the objective platform that crimanl needs to explore
+to walk-to-south-end-platform [pass xcor-here]
+  let destination-south patch xcor-here min-pycor
+  
+  set heading towards destination-south
+  fd 1
+end 
+
+
+
+to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
   ask person[
     let p-num [number] of patch-here ;set the current platform number of the patch here
     let p-type [patch-type] of patch-here ; set the type of patch here
     set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
     
-    ifelse p-num != objective-number[ ; if on the wrong platform
-    change-platform-step self] ; change platform to the correcto ne
-    [ifelse max-pycor * random-float 1 > ycor and p-type = "platform"[ ; randomply generate how far criminal should explore along the platform
-    face-north-forward-one self] ; keep moving down the platform
-      [move-around-randomly self]] ; once meet the randomly generated depth of the platform, move around randomly
+    let x xcor ;set the current xcor local value
+    let y_north max-pycor * 0.9 ;set the local ycor of north platform
+    let y_south max-pycor * 0.2 ; set the local ycor of south platform
+    let destination-north patch x y_north ; set the local north destination
+    let destination-south patch x y_south ; set the local south destination
+    
+    ifelse p-num = objective-number and p-type = "platform"[ ; if we are on the right platform
+      ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
+        ifelse (patch-here = destination-north) [ ; if we are on the north destination location
+          face destination-south ; face south and walk towards south destination location
+          fd 1 print "face south1"][
+          face destination-north ; if not on the north destination location, keep walking north
+          fd 1 print "face north1"]
+      ][
+        ifelse patch-here = destination-south and heading != 180[ ; if on the south destination location
+          move-around-randomly self print"move randomly"][ ; move around randomly
+          face destination-south ; if not on the south destination location then keep heading south
+          fd 1 print"face south2"]]
+       ][
+    change-platform-step self print"change platform"] ; if on the wrong platform then keep changin platform
   ]
   
 end
@@ -72,7 +102,7 @@ to criminal_turn_movement_decision [pass target p-num p-type]
   
     ]
       if objective = "explore" [
-      explore-station self platform-number-explore
+      look-around self platform-number-explore
   ]][
     print "there is an error in criminal movement"
   ]

@@ -54,7 +54,6 @@ to go ; the main function called with each tick
 
     update_visability self ([visibility] of patch-here)
     criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
-
     checking-gait self
   ]
 
@@ -84,7 +83,7 @@ to set-up
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
 
-  init-security 1
+  init-security 0
 
   init-criminals
 end
@@ -140,7 +139,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -376,7 +375,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 22) : explore;  (security 21) : 0;   ]
+[(criminal 21) : explore;   ]
 1
 1
 String
@@ -387,7 +386,7 @@ INPUTBOX
 1292
 691
 platform-number-explore
-2.0
+4.0
 1
 0
 Number
