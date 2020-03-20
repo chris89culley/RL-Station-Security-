@@ -43,20 +43,10 @@ to leave-objective [person p-num p-type]
   
 end 
 
-to walk-to-north-end-platform [pass xcor-here]
-  let destination-north patch xcor-here max-pycor
-  
-  set heading towards destination-north
+to walk-to-destination [pass destination]
+  set heading towards destination
   fd 1
 end 
-
-to walk-to-south-end-platform [pass xcor-here]
-  let destination-south patch xcor-here min-pycor
-  
-  set heading towards destination-south
-  fd 1
-end 
-
 
 
 to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
@@ -74,17 +64,17 @@ to look-around [person platform-number] ; pass in the objective platform that cr
     ifelse p-num = objective-number and p-type = "platform"[ ; if we are on the right platform
       ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
         ifelse (patch-here = destination-north) [ ; if we are on the north destination location
-          face destination-south ; face south and walk towards south destination location
-          fd 1 print "face south1"][
-          face destination-north ; if not on the north destination location, keep walking north
-          fd 1 print "face north1"]
+          walk-to-destination self destination-south ; face south and walk towards south destination location
+          print "face south1"][
+          walk-to-destination self destination-north ; if not on the north destination location, keep walking north
+          print "face north1"]
       ][
         ifelse patch-here = destination-south and heading != 180[ ; if on the south destination location
           move-around-randomly self print"move randomly"][ ; move around randomly
-          face destination-south ; if not on the south destination location then keep heading south
-          fd 1 print"face south2"]]
+          walk-to-destination self destination-south ; if not on the south destination location then keep heading south
+          print"face south2"]]
        ][
-    change-platform-step self print"change platform"] ; if on the wrong platform then keep changin platform
+    change-platform-step self print"change platform"] ; if on the wrong platform then keep changing platform
   ]
   
 end
