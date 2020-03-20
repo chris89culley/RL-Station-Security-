@@ -65,16 +65,17 @@ to look-around [person platform-number] ; pass in the objective platform that cr
       ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
         ifelse (patch-here = destination-north) [ ; if we are on the north destination location
           walk-to-destination self destination-south ; face south and walk towards south destination location
-          print "face south1"][
+          ][
           walk-to-destination self destination-north ; if not on the north destination location, keep walking north
-          print "face north1"]
+          ]
       ][
-        ifelse patch-here = destination-south and heading != 180[ ; if on the south destination location
-          move-around-randomly self print"move randomly"][ ; move around randomly
+        ifelse patch-here = destination-south [ ; if on the south destination location
+          walk-to-destination self destination-north ; face north and walk towards north destination location
+          ][ ; 
           walk-to-destination self destination-south ; if not on the south destination location then keep heading south
-          print"face south2"]]
+          ]]
        ][
-    change-platform-step self print"change platform"] ; if on the wrong platform then keep changing platform
+    change-platform-step self] ; if on the wrong platform then keep changing platform
   ]
   
 end
