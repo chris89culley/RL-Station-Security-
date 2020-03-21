@@ -375,7 +375,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 23) : explore;   ]
+[(criminal 20) : explore;   ]
 1
 1
 String
