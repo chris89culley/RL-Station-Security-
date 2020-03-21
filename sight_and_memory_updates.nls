@@ -67,6 +67,7 @@ to look [person]
       if member? self pass-list[ ;  ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
         let pos position self pass-list  ;find their position and get their properties and store them
         let properties item pos my-list
+        set angle-list item 4 properties
         let previous_vuln  (previous_predicted_vuln properties)
         set my-list remove-item pos my-list
         set pass-list remove-item pos pass-list
