@@ -84,6 +84,7 @@ to look [person]
   ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list
   ;print was used for debugging
+  print person  
   print seen-list
   ]
 
