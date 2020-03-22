@@ -188,7 +188,7 @@ INPUTBOX
 1308
 408
 average-arrival-number
-10.0
+1.0
 1
 0
 Number
@@ -375,7 +375,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 22) : investigate;   ]
+[(criminal 22) : explore;   ]
 1
 1
 String

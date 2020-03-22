@@ -102,7 +102,7 @@ ask person[
 
     ;perspective is the angle of vector from target to person heading is the heading of target -> initialise these as heading initially
     let heading-angle heading
-    let perspective-angle heading
+    let perspective-angle 0
 
     ask target[
       ;get these angles -> probably don't need the first one
@@ -111,11 +111,12 @@ ask person[
     ]
 
     ;get the difference to get orientation target is being observed from
-    set dif heading-angle - perspective-angle
+    set dif perspective-angle - heading-angle
     if dif < 0 [set dif 360 + dif]
     ]
   ]
 
+  print dif
   ;return this value
   report dif
 end
