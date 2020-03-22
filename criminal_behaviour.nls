@@ -51,7 +51,7 @@ end
 
 to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
   ask person[
-    
+    look self ; initiate look operation function
     let p-num [number] of patch-here ;set the current platform number of the patch here
     let p-type [patch-type] of patch-here ; set the type of patch here
     set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
@@ -82,19 +82,19 @@ to look-around [person platform-number] ; pass in the objective platform that cr
 end
 
 to-report q1-shortest-distance [q1 q2 q3 q4]
-report ((distance q1 < distance q2) and (distance q1 < distance q3) and (distance q1 < distance q4))
+report (distance q1 < distance q2) and (distance q1 < distance q4) and (distance q1 < distance q3) and (distance q1 < distance q4)
 end
 
 to-report q2-shortest-distance [q1 q2 q3 q4]
-report ((distance q2 < distance q1) and (distance q2 < distance q3) and (distance q2 < distance q4))
+report (distance q2 < distance q1) or (distance q2 < distance q3) or (distance q2 < distance q4)
 end
 
 to-report q3-shortest-distance [q1 q2 q3 q4]
-report ((distance q3 < distance q1) and (distance q3 < distance q2) and (distance q3 < distance q4))
+report (distance q3 < distance q1) or (distance q3 < distance q2) or (distance q3 < distance q4)
 end
 
 to-report q4-shortest-distance [q1 q2 q3 q4]
-report ((distance q4 < distance q1) and (distance q4 < distance q2) and (distance q4 < distance q3))
+report (distance q4 < distance q1) or (distance q4 < distance q2) or (distance q4 < distance q3)
 end
 
 to-report q1-last-angle [angle-list]
@@ -122,87 +122,76 @@ end
 to move-to-q-d [pass target qx-d]
     ifelse patch-here = qx-d[
       set heading towards target
-      print "look at target"][
+      fd 1
+      stop][
       set heading towards qx-d
       fd 1]
 end 
 
 to look-for-another-angle [ person target ]
   ask person [
-
-    let properties get-target-properties self target
-    let target-angle-list get_stored_angle_list target properties
-    let r 2 ; radius of the circle
-    let heading-angle [heading] of target
+    set heading towards target ; set heading towards target at the start of each tick
+    look self ; initiate look operation function
     
-    let heading-1 heading-setup self heading-angle 45
-    let heading-2 heading-setup self heading-angle 135
-    let heading-3 heading-setup self heading-angle 225
-    let heading-4 heading-setup self heading-angle 315
+    let properties get-target-properties self target ; get properties of the target
+    let target-angle-list get_stored_angle_list target properties ; get angle-list of the target calling a local variable target-angle-list
+    let r 3 ; radius of the circle 
+    let heading-angle 0 ; let inital heading to be 0
+    
+    let heading-1 heading-setup self heading-angle 10 ; get the angle of the first quadrant + 10 safety degree
+    let heading-2 heading-setup self heading-angle 100 ; get the angle of the second quadrant + 10 safety degree
+    let heading-3 heading-setup self heading-angle 190 ; get the angle of the third quadrant + 10 safety degree
+    let heading-4 heading-setup self heading-angle 280 ; get the angle of the fourth quadrant + 10 safety degree
 
-    let q1-d patch-right-and-ahead heading-1 r
-    let q2-d patch-right-and-ahead heading-2 r
-    let q3-d patch-right-and-ahead heading-3 r
-    let q4-d patch-right-and-ahead heading-4 r
+    let q1-d patch-right-and-ahead heading-1 r ; set the quadrant 1 target patch
+    let q2-d patch-right-and-ahead heading-2 r ; set the quadrant 2 target patch
+    let q3-d patch-right-and-ahead heading-3 r ; set the quadrant 3 target patch 
+    let q4-d patch-right-and-ahead heading-4 r ; set the quadrant 4 target patch
     
     ask target[
-      set q1-d patch-right-and-ahead heading-1 r
-      set q2-d patch-right-and-ahead heading-2 r
-      set q3-d patch-right-and-ahead heading-3 r
-      set q4-d patch-right-and-ahead heading-4 r
+      set q1-d patch-right-and-ahead heading-1 r ; calibrate the quadrant 1 target patch to the target's heading
+      set q2-d patch-right-and-ahead heading-2 r ; calibrate the quadrant 2 target patch to the target's heading
+      set q3-d patch-right-and-ahead heading-3 r ; calibrate the quadrant 3 target patch to the target's heading
+      set q4-d patch-right-and-ahead heading-4 r ; calibrate the quadrant 4 target patch to the target's heading
     ]  
     
-    ; debugging section
-    ask q1-d [set pcolor yellow]
-    ask q2-d [set pcolor orange]
-    ask q3-d [set pcolor cyan]
-    ask q4-d [set pcolor magenta]
-    print target-angle-list
-    print "crim heading"
-    print heading
-    print "target heading"
-    print [heading] of target
+    ifelse distance target < r + 6[ ; if person is within this range
+      if (item 0 target-angle-list = 0) and (q1-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 1 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q1-d print "head to q11"] ; set heading to quadrant 1 target patch and fd 1
     
-    let angle get-angle self target
-    print "angle"
-    print angle
-    
-    ifelse distance target < r + 3[
-      if (item 0 target-angle-list = 0) and (q3-shortest-distance q1-d q2-d q3-d q4-d)[
-      move-to-q-d self target q3-d print "head to q31"]
-    
-      if (item 1 target-angle-list = 0) and (q4-shortest-distance q1-d q2-d q3-d q4-d)[
-      move-to-q-d self target q4-d print "head to q41"] 
+      if (item 1 target-angle-list = 0) and (q2-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 2 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q2-d print "head to q21"] ; set heading to quadrant 2 target patch and fd 1
+          
  
-      if (item 2 target-angle-list = 0) and (q1-shortest-distance q1-d q2-d q3-d q4-d)[
-      move-to-q-d self target q1-d print "head to q11"]
+      if (item 2 target-angle-list = 0) and (q3-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 3 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q3-d print "head to q31"] ; set heading to quadrant 3 target patch and fd 1
 
-      if (item 3 target-angle-list = 0) and (q2-shortest-distance q1-d q2-d q3-d q4-d)[
-      move-to-q-d self target q2-d print "head to q21"]
+      if (item 3 target-angle-list = 0) and (q4-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 4 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q4-d print "head to q41"] ; set heading to quadrant 4 target patch and fd 1
 
-      if q1-last-angle target-angle-list[
-      move-to-q-d self target q3-d print "head to q32"]
+      if q1-last-angle target-angle-list[ ; if quadrant 1 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q1-d print "head to q13"] ; still set heading to quadrant 1 target patch and fd 1
 
-      if q2-last-angle target-angle-list[
-      move-to-q-d self target q4-d print "head to q42"]
+      if q2-last-angle target-angle-list[ ; if quadrant 2 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q2-d print "head to q23"] ; still set heading to quadrant 2 target patch and fd 1
 
-      if q3-last-angle target-angle-list[
-      move-to-q-d self target q1-d print "head to q12"]
+      if q3-last-angle target-angle-list[ ; if quadrant 3 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q3-d print "head to q33"] ; still set heading to quadrant 3 target patch and fd 1
 
-      if q4-last-angle target-angle-list[
-      move-to-q-d self target q2-d print "head to q22"]    
+      if q4-last-angle target-angle-list[ ; if quadrant 4 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q4-d print "head to q43"] ; still set heading to quadrant 4 target patch and fd 1   
     ][
-    set heading towards target
-    fd 1
-      print "too far to investigate, move closer"]    
+    set heading towards target ; if person not within this range, face towards target and fd 1
+    fd 1]    
   ]
 end
 
 
 to criminal_turn_movement_decision [pass target p-num p-type]
   
-   set objective criminal_objective_input
-   look self
+  ; interim objective input via API to change objective during the simulation
+   set objective criminal_objective_input ;
+  
    carefully[
         if objective = "leave" [
       set-objective-to-nearest-exit pass p-num

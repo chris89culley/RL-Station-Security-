@@ -57,11 +57,11 @@ to init-people [number-to-place]
     ]
 end
 
-to init-criminals
-  ask n-of number-of-criminals (patches with [patch-type = "platform"])[
-    sprout-criminals number-of-criminals [
+to init-criminals [number-to-place]
+  ask n-of number-to-place (patches with [patch-type = "platform"])[; put them on a platform
+    sprout-criminals 1 [
     set shape "person"
-    set color green
+    set color red
     set money 0
     set gait "walking"
     set has-baggage False

@@ -85,7 +85,7 @@ to set-up
 
   init-security 0
 
-  init-criminals
+  init-criminals 1
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -214,17 +214,6 @@ show-target-value?
 0
 1
 -1000
-
-INPUTBOX
-991
-449
-1107
-509
-number-of-criminals
-1.0
-1
-0
-Number
 
 INPUTBOX
 994
@@ -375,7 +364,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 22) : explore;   ]
+[(criminal 21) : explore;   ]
 1
 1
 String

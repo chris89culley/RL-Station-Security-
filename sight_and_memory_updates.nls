@@ -115,8 +115,8 @@ ask person[
     if dif < 0 [set dif 360 + dif]
     ]
   ]
-
-  print dif
+  ;print "dif"
+ ; print dif
   ;return this value
   report dif
 end
