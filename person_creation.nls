@@ -68,6 +68,7 @@ to init-criminals
     set carrying-baggage False
     set seen-list []
     set objective criminal_init_objective
+    set judgement saturate_0_1 random-normal 0.5 0.125
     ]
   ]
 end

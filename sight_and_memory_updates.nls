@@ -21,7 +21,7 @@ to-report add_person_details_to_memory [angle-list my-list]
  
   
         ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
-        let familiarity ((sum angle-list) + 1) * ([judgement] of myself)
+        let familiarity (1 / ((sum angle-list) + 1)) * ([judgement] of myself)
         let vuln saturate_0_1 (random-normal vulnerability familiarity)
         let pred_weight saturate_0_1 (random-normal aesthetic familiarity)
         ;now put values into the list along with the calculated values

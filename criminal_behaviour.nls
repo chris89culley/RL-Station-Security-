@@ -51,6 +51,7 @@ end
 
 to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
   ask person[
+    
     let p-num [number] of patch-here ;set the current platform number of the patch here
     let p-type [patch-type] of patch-here ; set the type of patch here
     set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
@@ -61,9 +62,7 @@ to look-around [person platform-number] ; pass in the objective platform that cr
     let destination-north patch x y_north ; set the local north destination
     let destination-south patch x y_south ; set the local south destination
     
-    look self
-    
-    ifelse p-num = objective-number and p-type = "platform"[ ; if we are on the right platform
+    ifelse (p-num = objective-number and p-type = "platform") or (p-num = objective-number and p-type = "entrance")[ ; if we are on the right platform
       ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
         ifelse (patch-here = destination-north) [ ; if we are on the north destination location
           walk-to-destination self destination-south ; face south and walk towards south destination location
@@ -82,15 +81,128 @@ to look-around [person platform-number] ; pass in the objective platform that cr
   
 end
 
+to-report q1-shortest-distance [q1 q2 q3 q4]
+report ((distance q1 < distance q2) and (distance q1 < distance q3) and (distance q1 < distance q4))
+end
+
+to-report q2-shortest-distance [q1 q2 q3 q4]
+report ((distance q2 < distance q1) and (distance q2 < distance q3) and (distance q2 < distance q4))
+end
+
+to-report q3-shortest-distance [q1 q2 q3 q4]
+report ((distance q3 < distance q1) and (distance q3 < distance q2) and (distance q3 < distance q4))
+end
+
+to-report q4-shortest-distance [q1 q2 q3 q4]
+report ((distance q4 < distance q1) and (distance q4 < distance q2) and (distance q4 < distance q3))
+end
+
+to-report q1-last-angle [angle-list]
+  report (item 0 angle-list = 0) and (item 1 angle-list = 1) and (item 2 angle-list = 1) and (item 3 angle-list = 1)
+end 
+
+to-report q2-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 0) and (item 2 angle-list = 1) and (item 3 angle-list = 1)
+end 
+
+to-report q3-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 1) and (item 2 angle-list = 0) and (item 3 angle-list = 1)
+end 
+
+to-report q4-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 1) and (item 2 angle-list = 1) and (item 3 angle-list = 0)
+end 
+
+to-report heading-setup [pass heading-angle degree]
+  let heading-x heading-angle + degree
+  if heading-x > 360 [set heading-x (heading-x - 360)]
+  report heading-x
+end
+
+to move-to-q-d [pass target qx-d]
+    ifelse patch-here = qx-d[
+      set heading towards target
+      print "look at target"][
+      set heading towards qx-d
+      fd 1]
+end 
+
 to look-for-another-angle [ person target ]
   ask person [
+
     let properties get-target-properties self target
     let target-angle-list get_stored_angle_list target properties
+    let r 2 ; radius of the circle
+    let heading-angle [heading] of target
     
+    let heading-1 heading-setup self heading-angle 45
+    let heading-2 heading-setup self heading-angle 135
+    let heading-3 heading-setup self heading-angle 225
+    let heading-4 heading-setup self heading-angle 315
+
+    let q1-d patch-right-and-ahead heading-1 r
+    let q2-d patch-right-and-ahead heading-2 r
+    let q3-d patch-right-and-ahead heading-3 r
+    let q4-d patch-right-and-ahead heading-4 r
     
+    ask target[
+      set q1-d patch-right-and-ahead heading-1 r
+      set q2-d patch-right-and-ahead heading-2 r
+      set q3-d patch-right-and-ahead heading-3 r
+      set q4-d patch-right-and-ahead heading-4 r
+    ]  
+    
+    ; debugging section
+    ask q1-d [set pcolor yellow]
+    ask q2-d [set pcolor orange]
+    ask q3-d [set pcolor cyan]
+    ask q4-d [set pcolor magenta]
+    print target-angle-list
+    print "crim heading"
+    print heading
+    print "target heading"
+    print [heading] of target
+    
+    let angle get-angle self target
+    print "angle"
+    print angle
+    
+    ifelse distance target < r + 3[
+      if (item 0 target-angle-list = 0) and (q3-shortest-distance q1-d q2-d q3-d q4-d)[
+      move-to-q-d self target q3-d print "head to q31"]
+    
+      if (item 1 target-angle-list = 0) and (q4-shortest-distance q1-d q2-d q3-d q4-d)[
+      move-to-q-d self target q4-d print "head to q41"] 
+ 
+      if (item 2 target-angle-list = 0) and (q1-shortest-distance q1-d q2-d q3-d q4-d)[
+      move-to-q-d self target q1-d print "head to q11"]
+
+      if (item 3 target-angle-list = 0) and (q2-shortest-distance q1-d q2-d q3-d q4-d)[
+      move-to-q-d self target q2-d print "head to q21"]
+
+      if q1-last-angle target-angle-list[
+      move-to-q-d self target q3-d print "head to q32"]
+
+      if q2-last-angle target-angle-list[
+      move-to-q-d self target q4-d print "head to q42"]
+
+      if q3-last-angle target-angle-list[
+      move-to-q-d self target q1-d print "head to q12"]
+
+      if q4-last-angle target-angle-list[
+      move-to-q-d self target q2-d print "head to q22"]    
+    ][
+    set heading towards target
+    fd 1
+      print "too far to investigate, move closer"]    
   ]
 end
+
+
 to criminal_turn_movement_decision [pass target p-num p-type]
+  
+   set objective criminal_objective_input
+   look self
    carefully[
         if objective = "leave" [
       set-objective-to-nearest-exit pass p-num
@@ -99,11 +211,14 @@ to criminal_turn_movement_decision [pass target p-num p-type]
       if objective = "steal_from_target"[
         follow-target self target
         steal-target self target  
-  
     ]
       if objective = "explore" [
       look-around self platform-number-explore
-  ]][
+  ]
+      if objective = "investigate" [
+      look-for-another-angle self target
+  ]]
+  [
     print "there is an error in criminal movement"
   ]
 end

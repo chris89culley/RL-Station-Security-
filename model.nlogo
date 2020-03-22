@@ -139,7 +139,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -211,7 +211,7 @@ SWITCH
 446
 show-target-value?
 show-target-value?
-1
+0
 1
 -1000
 
@@ -375,7 +375,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 20) : explore;   ]
+[(criminal 22) : investigate;   ]
 1
 1
 String
@@ -386,10 +386,21 @@ INPUTBOX
 1292
 691
 platform-number-explore
-3.0
+1.0
 1
 0
 Number
+
+INPUTBOX
+12
+476
+154
+536
+criminal_objective_input
+explore
+1
+0
+String
 
 @#$#@#$#@
 ## WHAT IS IT?
