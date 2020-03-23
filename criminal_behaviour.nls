@@ -1,27 +1,25 @@
-
+;only call follow-target when target is in field of view
 to follow-target [person target]
   ask person [
     let p-type [patch-type] of patch-here  ; set the current patch type
-    let p-num [number] of patch-here ; set the current patch number
     let target-p-type [[patch-type] of patch-here] of target ; set the current patch type of target
     
-    ifelse (p-type = target-p-type) or (p-type = "stairs" and target-p-type = "corridor") or (p-type = "corridor" and target-p-type = "stairs")[
-      set heading towards target ;if on the same patch type or on stairs and corridor, set heading to target and forward 1
-      fd 1]
-    [ifelse (p-type = "platform" and target-p-type = "stairs" and [ycor] of target < ycor) or (p-type = "platform" and target-p-type = "corridor" and [ycor] of target < ycor) [
-      set heading 180 ;if on platform and target is on stairs or corridor, move south by 1 until ycors are the same
-      fd 1] 
+    ifelse follow_on_the_same_platform_or_stairs_and_corridor self p-type target-p-type [
+      face-target-forward-one self target] ;if on the same patch type or on stairs and corridor, set heading to target and forward 1
+    
+    [ifelse follow_from_platform_to_target_on_stairs_or_corridor self target p-type target-p-type [
+      face-south-forward-one self] ;if on platform and target is on stairs or corridor, move south by 1 until ycors are the same 
       [ifelse p-type = "stairs" or p-type = "corridor"[ 
+        
         ifelse [xcor] of target < xcor [ ; if on stairs or corridorand xcor of the target is smaller
-          set heading 270 ; move west by 1 until xcors are the same
-          fd 1] 
-        [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
-          fd 1]] 
+          face-west-forward-one self] ; move west by 1 until xcors are the same
+        
+        [face-target-forward-one self target]] ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
+        
        [ifelse [xcor] of target > xcor [ ; if on stairs or corridorand xcor of the target is larger
-          set heading 90 ; move east by 1 until xcors are the same
-          fd 1] 
-          [set heading towards target ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1
-            fd 1]] 
+          face-east-forward-one self] ; move east by 1 until xcors are the same
+          
+          [face-target-forward-one self target]] ; if xcors is the same or smaller than xcor of target, set heading towards target and forward 1 
     ]]
   ]
 end
@@ -36,26 +34,6 @@ to steal-target [ person target ]
   [ask person [move-around-randomly myself]] ;if fail to steal, move around randomly
 end
 
-
-to criminal_turn_movement_decision [pass target p-num p-type]
-   carefully[
-        if objective = "leave" [
-      set-objective-to-nearest-exit pass p-num
-      leave-objective pass p-num p-type
-      ]
-      if objective = "steal_from_target"[
-        follow-target self target
-        steal-target self target 
-    ;    follow-target self passenger who-to-steal  
-  
-    ]
-      if objective = "explore" [
-      move-around-randomly self
-  ]][
-    print "there is an error in criminal movement"
-  ]
-end
-
 to leave-objective [person p-num p-type]
   ifelse p-num != objective-number or p-type = "stairs" [
     change-platform-step person 
@@ -64,3 +42,174 @@ to leave-objective [person p-num p-type]
   ]  
   
 end 
+
+to walk-to-destination [pass destination]
+  set heading towards destination
+  fd 1
+end 
+
+
+to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
+  ask person[
+    look self ; initiate look operation function
+    let p-num [number] of patch-here ;set the current platform number of the patch here
+    let p-type [patch-type] of patch-here ; set the type of patch here
+    set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
+    
+    let x xcor ;set the current xcor local value
+    let y_north max-pycor * 0.9 ;set the local ycor of north platform
+    let y_south max-pycor * 0.2 ; set the local ycor of south platform
+    let destination-north patch x y_north ; set the local north destination
+    let destination-south patch x y_south ; set the local south destination
+    
+    ifelse (p-num = objective-number and p-type = "platform") or (p-num = objective-number and p-type = "entrance")[ ; if we are on the right platform
+      ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
+        ifelse (patch-here = destination-north) [ ; if we are on the north destination location
+          walk-to-destination self destination-south ; face south and walk towards south destination location
+          ][
+          walk-to-destination self destination-north ; if not on the north destination location, keep walking north
+          ]
+      ][
+        ifelse patch-here = destination-south [ ; if on the south destination location
+          walk-to-destination self destination-north ; face north and walk towards north destination location
+          ][ ; 
+          walk-to-destination self destination-south ; if not on the south destination location then keep heading south
+          ]]
+       ][
+    change-platform-step self] ; if on the wrong platform then keep changing platform
+  ]
+  
+end
+
+to-report q1-shortest-distance [q1 q2 q3 q4]
+report (distance q1 < distance q2) and (distance q1 < distance q4) and (distance q1 < distance q3) and (distance q1 < distance q4)
+end
+
+to-report q2-shortest-distance [q1 q2 q3 q4]
+report (distance q2 < distance q1) or (distance q2 < distance q3) or (distance q2 < distance q4)
+end
+
+to-report q3-shortest-distance [q1 q2 q3 q4]
+report (distance q3 < distance q1) or (distance q3 < distance q2) or (distance q3 < distance q4)
+end
+
+to-report q4-shortest-distance [q1 q2 q3 q4]
+report (distance q4 < distance q1) or (distance q4 < distance q2) or (distance q4 < distance q3)
+end
+
+to-report q1-last-angle [angle-list]
+  report (item 0 angle-list = 0) and (item 1 angle-list = 1) and (item 2 angle-list = 1) and (item 3 angle-list = 1)
+end 
+
+to-report q2-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 0) and (item 2 angle-list = 1) and (item 3 angle-list = 1)
+end 
+
+to-report q3-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 1) and (item 2 angle-list = 0) and (item 3 angle-list = 1)
+end 
+
+to-report q4-last-angle [angle-list]
+  report (item 0 angle-list = 1) and (item 1 angle-list = 1) and (item 2 angle-list = 1) and (item 3 angle-list = 0)
+end 
+
+to-report heading-setup [pass heading-angle degree]
+  let heading-x heading-angle + degree
+  if heading-x > 360 [set heading-x (heading-x - 360)]
+  report heading-x
+end
+
+to move-to-q-d [pass target qx-d]
+    ifelse patch-here = qx-d[
+      set heading towards target
+      fd 1
+      stop][
+      set heading towards qx-d
+      fd 1]
+end 
+
+to look-for-another-angle [ person target ]
+  ask person [
+    set heading towards target ; set heading towards target at the start of each tick
+    look self ; initiate look operation function
+    
+    let properties get-target-properties self target ; get properties of the target
+    let target-angle-list get_stored_angle_list target properties ; get angle-list of the target calling a local variable target-angle-list
+    let r 3 ; radius of the circle 
+    let heading-angle 0 ; let inital heading to be 0
+    
+    let heading-1 heading-setup self heading-angle 10 ; get the angle of the first quadrant + 10 safety degree
+    let heading-2 heading-setup self heading-angle 100 ; get the angle of the second quadrant + 10 safety degree
+    let heading-3 heading-setup self heading-angle 190 ; get the angle of the third quadrant + 10 safety degree
+    let heading-4 heading-setup self heading-angle 280 ; get the angle of the fourth quadrant + 10 safety degree
+
+    let q1-d patch-right-and-ahead heading-1 r ; set the quadrant 1 target patch
+    let q2-d patch-right-and-ahead heading-2 r ; set the quadrant 2 target patch
+    let q3-d patch-right-and-ahead heading-3 r ; set the quadrant 3 target patch 
+    let q4-d patch-right-and-ahead heading-4 r ; set the quadrant 4 target patch
+    
+    ask target[
+      set q1-d patch-right-and-ahead heading-1 r ; calibrate the quadrant 1 target patch to the target's heading
+      set q2-d patch-right-and-ahead heading-2 r ; calibrate the quadrant 2 target patch to the target's heading
+      set q3-d patch-right-and-ahead heading-3 r ; calibrate the quadrant 3 target patch to the target's heading
+      set q4-d patch-right-and-ahead heading-4 r ; calibrate the quadrant 4 target patch to the target's heading
+    ]  
+    
+    ifelse distance target < r + 6[ ; if person is within this range
+      if (item 0 target-angle-list = 0) and (q1-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 1 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q1-d print "head to q11"] ; set heading to quadrant 1 target patch and fd 1
+    
+      if (item 1 target-angle-list = 0) and (q2-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 2 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q2-d print "head to q21"] ; set heading to quadrant 2 target patch and fd 1
+          
+ 
+      if (item 2 target-angle-list = 0) and (q3-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 3 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q3-d print "head to q31"] ; set heading to quadrant 3 target patch and fd 1
+
+      if (item 3 target-angle-list = 0) and (q4-shortest-distance q1-d q2-d q3-d q4-d)[ ; if quadrant 4 is unseen and quadrant 1 target patch is the nearest
+          move-to-q-d self target q4-d print "head to q41"] ; set heading to quadrant 4 target patch and fd 1
+
+      if q1-last-angle target-angle-list[ ; if quadrant 1 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q1-d print "head to q13"] ; still set heading to quadrant 1 target patch and fd 1
+
+      if q2-last-angle target-angle-list[ ; if quadrant 2 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q2-d print "head to q23"] ; still set heading to quadrant 2 target patch and fd 1
+
+      if q3-last-angle target-angle-list[ ; if quadrant 3 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q3-d print "head to q33"] ; still set heading to quadrant 3 target patch and fd 1
+
+      if q4-last-angle target-angle-list[ ; if quadrant 4 is the last unseen quadrant but the distant is not the nearst
+      move-to-q-d self target q4-d print "head to q43"] ; still set heading to quadrant 4 target patch and fd 1   
+    ][
+    set heading towards target ; if person not within this range, face towards target and fd 1
+    fd 1]    
+  ]
+end
+
+
+to criminal_turn_movement_decision [pass target p-num p-type]
+  
+  ; interim objective input via API to change objective during the simulation
+   set objective criminal_objective_input ;
+  
+   carefully[
+        if objective = "leave" [
+      set-objective-to-nearest-exit pass p-num
+      leave-objective pass p-num p-type
+      ]
+      if objective = "steal_from_target"[
+        follow-target self target
+        steal-target self target  
+    ]
+      if objective = "explore" [
+      look-around self platform-number-explore
+  ]
+      if objective = "investigate" [
+      look-for-another-angle self target
+  ]]
+  [
+    print "there is an error in criminal movement"
+  ]
+end
+
+

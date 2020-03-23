@@ -36,12 +36,16 @@ to go ; the main function called with each tick
     ]
 
   ask securities[
+    ;only action once, when list is 2, obviously this condition will change
+    if (length seen-list = 2)[set actioning true]
 
-    if (length seen-list > 3)[set actioning true]
-
+    ;if actioning go to target, if not, patrol
     ifelse actioning = true[
-      let target-props get-target-properties self
-      engage-target self target-props
+      ;get target
+      let target get-target self
+      ;if target is alive go into search for target, if dead just look -> this is probably on of the reasons the security stops
+      ifelse(is-turtle? target)[search-for-target self target][look self]
+
     ]
     [patrol-step]
   ]
@@ -50,7 +54,6 @@ to go ; the main function called with each tick
 
     update_visability self ([visibility] of patch-here)
     criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
-
     checking-gait self
   ]
 
@@ -80,9 +83,9 @@ to set-up
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
 
-  init-security 1
+  init-security 0
 
-  init-criminals
+  init-criminals 1
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -136,7 +139,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -185,7 +188,7 @@ INPUTBOX
 1308
 408
 average-arrival-number
-10.0
+1.0
 1
 0
 Number
@@ -196,7 +199,7 @@ INPUTBOX
 118
 333
 who-to-steal
-6.0
+4.0
 1
 0
 Number
@@ -208,20 +211,9 @@ SWITCH
 446
 show-target-value?
 show-target-value?
-1
+0
 1
 -1000
-
-INPUTBOX
-991
-449
-1107
-509
-number-of-criminals
-1.0
-1
-0
-Number
 
 INPUTBOX
 994
@@ -372,9 +364,31 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 23) : explore;  (security 22) : 0;   ]
+[(criminal 21) : explore;   ]
 1
 1
+String
+
+INPUTBOX
+1143
+631
+1292
+691
+platform-number-explore
+1.0
+1
+0
+Number
+
+INPUTBOX
+12
+476
+154
+536
+criminal_objective_input
+explore
+1
+0
 String
 
 @#$#@#$#@
@@ -729,7 +743,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
