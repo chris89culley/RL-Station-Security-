@@ -7,28 +7,33 @@ to-report  get_stored_angle_list [person properties]
   report item 4 properties
 end
 
-to-report previous_predicted_vuln [properties]
+to-report previous_predicted_vuln_susc [properties]
   report item 5 properties
 end
 
 
 
 to-report add_person_details_to_memory [angle-list my-list]
-   ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
-        let angle get-angle myself self
-        set angle-list replace-item (angle-to-quadrant angle) angle-list 1
-
-
-
-        ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
-        let familiarity (1 / ((sum angle-list) + 1)) * ([judgement] of myself)
-        let vuln saturate_0_1 (random-normal vulnerability familiarity)
-        let pred_weight saturate_0_1 (random-normal aesthetic familiarity)
-        ;now put values into the list along with the calculated values
-
-        set my-list lput (list self ticks (precision xcor 1) (precision ycor 1) angle-list (precision vuln 2) (precision pred_weight 2) (precision familiarity 2)) my-list
-
-        report my-list
+  ;get the angle and decide which quadrant passenger is being observed from -> activate the relavant quadrant
+  let angle get-angle myself self
+  set angle-list replace-item (angle-to-quadrant angle) angle-list 1
+ 
+  let vuln-susc vulnerability
+  
+  if [breed] of myself = securities [set vuln-susc suspicious-level]
+  
+  print vuln-susc
+  
+  
+  ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from
+  let familiarity (1 / ((sum angle-list) + 1)) * ([judgement] of myself)
+  set vuln-susc saturate_0_1 (random-normal vuln-susc familiarity)
+  let pred_weight saturate_0_1 (random-normal aesthetic familiarity)
+  ;now put values into the list along with the calculated values
+  
+  set my-list lput (list self ticks (precision xcor 1) (precision ycor 1) angle-list (precision vuln-susc 2) (precision pred_weight 2) (precision familiarity 2)) my-list
+  
+  report my-list
 end
 
 to-report check-and-move-security-memory [my-list]
@@ -42,7 +47,7 @@ end
 
 ;maybe change to observe to it reads better?
 to look [person]
-
+  print person
   ; get agentset of all turtles that are not me
   let jointset (turtle-set securities criminals passengers) with [self != myself]
   ask person[
@@ -68,7 +73,7 @@ to look [person]
         let pos position self pass-list  ;find their position and get their properties and store them
         let properties item pos my-list
         set angle-list item 4 properties
-        let previous_vuln  (previous_predicted_vuln properties)
+        let previous_vuln-susc  (previous_predicted_vuln_susc properties)
         set my-list remove-item pos my-list
         set pass-list remove-item pos pass-list
         ]
@@ -85,7 +90,7 @@ to look [person]
   ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list
   ;print was used for debugging
-  print person
+
   print seen-list
   ]
 

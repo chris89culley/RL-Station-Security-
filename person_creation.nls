@@ -45,6 +45,7 @@ to init-people [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-passengers 1 [
      init_person self
+     set suspicious-level  saturate_0_1 random-normal 0.5 0.125
      set label-color black
      set gait "walking"
      set has-baggage (random-float 1 > percentage_with_bag)
@@ -69,6 +70,7 @@ to init-criminals [number-to-place]
     set seen-list []
     set objective criminal_init_objective
     set judgement saturate_0_1 random-normal 0.5 0.125
+    set suspicious-level  saturate_0_1 random-normal 0.5 0.125
     ]
   ]
 end
@@ -77,7 +79,7 @@ end
 to init-security [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-securities 1 [
-      init_person self
+     init_person self
      set color yellow
      set-objective self
      set gait "walking"

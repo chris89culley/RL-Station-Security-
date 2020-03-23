@@ -9,12 +9,12 @@ breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
-passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
+passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
 securities-own [objective objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic money victim-target] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [ objective objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability] ; features that criminals can be given
+criminals-own [objective objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability suspicious-level] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -83,7 +83,7 @@ to set-up
   set-up-station ; create the station layout
   init-people 10 ; create the initial passengers in the station
 
-  init-security 0
+  init-security 1
 
   init-criminals 1
 end
@@ -364,7 +364,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 21) : explore;   ]
+[(criminal 23) : explore;  (security 22) : 0;   ]
 1
 1
 String
@@ -787,7 +787,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
