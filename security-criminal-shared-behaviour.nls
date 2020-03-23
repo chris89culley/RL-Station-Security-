@@ -67,9 +67,9 @@ to-report get-target-properties [person target]
   let pos position target target-list
   
   ;not sure why I put this in an ask function.. but it sets the target properties to those in the same position as the target in target-list
-  ask person[
-      set target-properties item pos seen-list
-  ]
+  print pos
+  set target-properties item pos seen-list
+  
   
   ;returns the properties for the search-for-target function (renamed from engage-target) 
   report target-properties

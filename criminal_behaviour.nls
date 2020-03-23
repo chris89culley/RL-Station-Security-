@@ -94,6 +94,7 @@ to-report heading-setup [pass heading-angle degree]
 end
 
 to move-to-q-d [pass target qx-d]
+ 
     ifelse patch-here = qx-d[
       set heading towards target
       fd 1
@@ -130,7 +131,6 @@ to look-for-another-angle [ person target ]
       [ 
         let next_to_search_for position 1 target-angle-list
         move-to-q-d self target (item next_to_search_for quadrants) 
-        
     ]]
    [
     print "there is an issue in looking for another angle - not in range"
@@ -140,29 +140,80 @@ to look-for-another-angle [ person target ]
 end
 
 
+to explore-condition-update [pers] 
+  
+  let desireability map [x -> ((item 6 x / 2) + item 5 x) * (1 - item 7 x) * 10 / (ticks - (item 1 x) + 1) * 1 / (abs (distancexy item 2 x item 3 x)) ] seen-list 
+  ifelse length seen-list > 0 and max desireability > target_desireabiliy [
+   print "list of desireability calculations"
+   print desireability 
+   print "targetting target = " 
+   set objective "investigate" 
+   set victim-target item position (max desireability) desireability seen-list 
+   print victim-target
+  ][
+    set objective "explore" 
+  ]
+  
+  
+end 
+
+
+to investigate-condition-update [pers target]
+   print "investigating target = "
+   print target
+   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target))
+   if des > target_steal_desireability [
+    set objective  "steal_from_target"
+  ]
+   if des < give-up-on-target [
+    set objective "explore" 
+  ]
+end 
+
+
+to check-i-should-still-steal [pers target] 
+  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target)) < give-up-on-target[
+   set objective "explore"
+  ]
+end 
+
+
+to check-i-should-leave [pers]
+  if money > money-crim-happy-with [
+    set objective "leave"
+  ]
+end  
+
+
+
 to criminal_turn_movement_decision [pass target p-num p-type]
   
   ; interim objective input via API to change objective during the simulation
    set objective criminal_objective_input ;
-  
-   carefully[
-        if objective = "leave" [
-      set-objective-to-nearest-exit pass p-num
-      leave-objective pass p-num p-type
+
+      check-i-should-leave pass
+      if objective = "leave" [
+        set-objective-to-nearest-exit pass p-num
+        leave-objective pass p-num p-type
       ]
-      if objective = "steal_from_target"[
+      if objective = "arrest_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
+        check-i-should-still-steal pass victim-target
         follow-target self target
         steal-target self target  
     ]
       if objective = "explore" [
+      
       look-around self platform-number-explore
+      explore-condition-update pass
   ]
       if objective = "investigate" [
-      look-for-another-angle self target
-  ]]
-  [
-    print "there is an error in criminal movement"
+      ;first you need to go to him (might require a change in platform) 
+      ; then look from a different angle 
+      ;look-for-another-angle self target
+      investigate-condition-update pass victim-target
+      
   ]
+
 end
 
 
