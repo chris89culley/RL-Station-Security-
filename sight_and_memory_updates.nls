@@ -106,6 +106,8 @@ ask person[
       ;get these angles -> probably don't need the first one
       set heading-angle heading
       set perspective-angle towards myself
+      print("me")
+      print(myself)
     ]
 
     ;get the difference to get orientation target is being observed from
@@ -113,6 +115,10 @@ ask person[
     if dif < 0 [set dif 360 + dif]
     ]
   ]
+  print("angle") 
+  print(person)
+  print(target)
+  print(dif)
 
   ;return this value
   report dif
