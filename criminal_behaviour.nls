@@ -147,11 +147,13 @@ to explore-condition-update [pers]
    print "list of desireability calculations"
    print desireability 
    print "targetting target = " 
-   set objective "investigate" 
+   ;set objective "investigate"
+   change-objective "investigate"
    set victim-target item position (max desireability) desireability seen-list 
    print victim-target
   ][
-    set objective "explore" 
+    ;set objective "explore"
+    change-objective "explore"
   ]
   
   
@@ -163,24 +165,28 @@ to investigate-condition-update [pers target]
    print target
    let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target))
    if des > target_steal_desireability [
-    set objective  "steal_from_target"
+    ;set objective  "steal_from_target"
+    change-objective "steal_from_target"
   ]
    if des < give-up-on-target [
-    set objective "explore" 
+    ;set objective "explore"
+    change-objective "explore"
   ]
 end 
 
 
 to check-i-should-still-steal [pers target] 
   if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target)) < give-up-on-target[
-   set objective "explore"
+   ;set objective "explore"
+   change-objective "explore"
   ]
 end 
 
 
 to check-i-should-leave [pers]
   if money > money-crim-happy-with [
-    set objective "leave"
+   ;set objective "leave"
+   change-objective "leave"
   ]
 end  
 
@@ -203,7 +209,10 @@ to criminal_turn_movement_decision [pass target p-num p-type]
     ]
       if objective = "explore" [
       
-      look-around self platform-number-explore
+      print "criminal exploring on:"
+      print objective-number
+      explore
+      ;look-around self platform-number-explore
       explore-condition-update pass
   ]
       if objective = "investigate" [
@@ -215,5 +224,6 @@ to criminal_turn_movement_decision [pass target p-num p-type]
   ]
 
 end
+
 
 

@@ -22,7 +22,7 @@ to-report add_person_details_to_memory [angle-list my-list]
   
   if [breed] of myself = securities [set vuln-susc suspicious-level]
   
-  print vuln-susc
+  ;print vuln-susc
   
   
   ;ascertain familiarity, a multiplicative factor applied to judgement -> depends on no. quadrants seen from

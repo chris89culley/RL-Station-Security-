@@ -11,10 +11,10 @@ breed [trains train]
 globals [platform-size track-size stairs-size bench-col] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic money victim-target] ; features that security can be given
+securities-own [objective objective-start-tick objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic suspicious-level money victim-target] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [objective objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability suspicious-level] ; features that criminals can be given
+criminals-own [objective objective-start-tick objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability suspicious-level] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -81,7 +81,7 @@ to set-up
   tick-advance 1
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
-  init-people 10 ; create the initial passengers in the station
+  init-people 7 ; create the initial passengers in the station
 
   init-security 1
 
@@ -133,13 +133,13 @@ NIL
 1
 
 BUTTON
-127
+141
 105
-190
+204
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -177,7 +177,7 @@ INPUTBOX
 1141
 410
 ticks-per-arrival
-2000.0
+20000.0
 1
 0
 Number
@@ -188,7 +188,7 @@ INPUTBOX
 1308
 408
 average-arrival-number
-1.0
+10.0
 1
 0
 Number
@@ -211,7 +211,7 @@ SWITCH
 446
 show-target-value?
 show-target-value?
-0
+1
 1
 -1000
 
@@ -232,7 +232,7 @@ INPUTBOX
 1313
 72
 train_1_arrival_tick
-150.0
+1500.0
 1
 0
 Number
@@ -243,7 +243,7 @@ INPUTBOX
 1312
 141
 train_2_arrival_tick
-180.0
+1800.0
 1
 0
 Number
@@ -254,7 +254,7 @@ INPUTBOX
 1312
 208
 train_3_arrival_tick
-175.0
+1750.0
 1
 0
 Number
@@ -265,7 +265,7 @@ INPUTBOX
 1312
 276
 train_4_arrival_tick
-160.0
+1600.0
 1
 0
 Number
@@ -364,7 +364,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 23) : explore;  (security 22) : 0;   ]
+[(criminal 6) : explore;   ]
 1
 1
 String

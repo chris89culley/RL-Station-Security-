@@ -34,6 +34,7 @@ to init_person [pers]
   set vulnerability  saturate_0_1 random-normal 0.5 0.125
   set aesthetic saturate_0_1 random-normal 0.5 0.125
   set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
+  set suspicious-level  saturate_0_1 random-normal 0.5 0.125
   set label-color black
   set gait "walking"
 end
@@ -45,12 +46,11 @@ to init-people [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-passengers 1 [
      init_person self
-     set suspicious-level  saturate_0_1 random-normal 0.5 0.125
      set label-color black
      set gait "walking"
      set has-baggage (random-float 1 > percentage_with_bag)
      set carrying-baggage has-baggage
-     set-objective self ; set their objective
+     set-objective self ;set their objective
      set train_board_ticks ticks + max list 0 random-normal 150 150
 
     ]
@@ -61,6 +61,7 @@ end
 to init-criminals [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[; put them on a platform
     sprout-criminals 1 [
+    set-objective self
     set shape "person"
     set color red
     set money 0
@@ -71,6 +72,7 @@ to init-criminals [number-to-place]
     set objective criminal_init_objective
     set judgement saturate_0_1 random-normal 0.5 0.125
     set suspicious-level  saturate_0_1 random-normal 0.5 0.125
+    set objective-start-tick 0
     ]
   ]
 end
@@ -87,6 +89,7 @@ to init-security [number-to-place]
      set carrying-baggage False
      set seen-list []
      set judgement saturate_0_1 random-normal 0.5 0.125
+     set objective-start-tick 0
     ]
     ]
 end

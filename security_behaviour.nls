@@ -9,16 +9,12 @@ to patrol-step
     ifelse on_the_right_plaform self p-num p-type[
       change-platform-step self
     ][
-      ; What is this >> ????
-      ifelse(ycor > max-pycor - 3)[ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)] ][stroll self]
+      ; What is this >> ???? >> it chnges the platform
+      ifelse(ycor > max-pycor - 3)[get-new-platform][stroll self]
     ]
   
   
 end
-
-
-
-
 
 
 to security_turn_movement_decision [pass target p-num p-type]
