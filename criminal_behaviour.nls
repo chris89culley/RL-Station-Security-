@@ -160,32 +160,9 @@ to explore-condition-update [pers]
 end 
 
 
-to investigate-condition-update [pers target]
-   print "investigating target = "
-   print target
-   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target))
-   if des > target_steal_desireability [
-    ;set objective  "steal_from_target"
-    change-objective "steal_from_target"
-  ]
-   if des < give-up-on-target [
-    ;set objective "explore"
-    change-objective "explore"
-  ]
-end 
-
-
-to check-i-should-still-steal [pers target] 
-  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target)) < give-up-on-target[
-   ;set objective "explore"
-   change-objective "explore"
-  ]
-end 
-
 
 to check-i-should-leave [pers]
   if money > money-crim-happy-with [
-   ;set objective "leave"
    change-objective "leave"
   ]
 end  
@@ -202,13 +179,12 @@ to criminal_turn_movement_decision [pass target p-num p-type]
         set-objective-to-nearest-exit pass p-num
         leave-objective pass p-num p-type
       ]
-      if objective = "arrest_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
-        check-i-should-still-steal pass victim-target
+      if objective = "steal_from_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
+        check-i-should-still-steal-arrest pass victim-target
         follow-target self target
         steal-target self target  
     ]
       if objective = "explore" [
-      
       print "criminal exploring on:"
       print objective-number
       explore
@@ -219,7 +195,7 @@ to criminal_turn_movement_decision [pass target p-num p-type]
       ;first you need to go to him (might require a change in platform) 
       ; then look from a different angle 
       ;look-for-another-angle self target
-      investigate-condition-update pass victim-target
+      investigate-condition-update pass victim-target "steal_from_target"
       
   ]
 

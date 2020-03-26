@@ -75,6 +75,32 @@ to-report get-target-properties [person target]
   report target-properties
 end
 
+
+; here we decide if we want to move from investigate to steal/arrest or to explore 
+to investigate-condition-update [pers target objective_on_satisfaction]
+   print "investigating target = "
+   print target
+   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target))
+   print "desireability" 
+   print des 
+   if des > target_steal_desireability [
+    print "trying to steal or arrest" 
+    ;set objective  "steal_from_target"
+    change-objective objective_on_satisfaction
+  ]
+   if des < give-up-on-target [
+    ;set objective "explore"
+    change-objective "explore"
+  ]
+end 
+
+to check-i-should-still-steal-arrest [pers target] 
+  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / (ticks - (item 1 target) + 1) * 1 / (abs (distancexy item 2 target item 3 target)) < give-up-on-target[
+   ;set objective "explore"
+   change-objective "explore"
+  ]
+end 
+
 to explore
   
   ;maybe add a randomisation around this

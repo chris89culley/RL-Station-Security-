@@ -364,7 +364,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 6) : explore;   ]
+[(criminal 18) : investigate;  (security 17) : 0;   ]
 1
 1
 String
@@ -419,7 +419,7 @@ INPUTBOX
 1307
 768
 give-up-on-target
-0.2
+0.1
 1
 0
 Number
@@ -787,7 +787,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

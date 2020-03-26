@@ -40,14 +40,11 @@ to-report update_current_objectives
 end
 
 to change-objective [new-objective]
-  print objective
-  print new-objective
-  
+
   ifelse objective = new-objective [
     print "in correct"
     stop]
   [
-  print "in"
   set objective new-objective
   set objective-start-tick ticks
   ]
