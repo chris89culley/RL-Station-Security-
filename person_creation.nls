@@ -80,7 +80,7 @@ end
 
 to init-security [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
-    sprout-securities 1 [
+    sprout-securities 0 [
      init_person self
      set color yellow
      set-objective self

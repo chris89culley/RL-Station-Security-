@@ -53,7 +53,7 @@ to go ; the main function called with each tick
   ask criminals [
 
     update_visability self ([visibility] of patch-here)
-    criminal_turn_movement_decision self passenger who-to-steal ([number] of patch-here) ([patch-type] of patch-here)
+    criminal_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
     checking-gait self
   ]
 
@@ -139,7 +139,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
@@ -199,7 +199,7 @@ INPUTBOX
 118
 333
 who-to-steal
-4.0
+16.0
 1
 0
 Number
@@ -364,7 +364,7 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 18) : investigate;  (security 17) : 0;   ]
+[(criminal 16) : explore;   ]
 1
 1
 String
@@ -386,7 +386,7 @@ INPUTBOX
 154
 536
 criminal_objective_input
-explore
+investigate
 1
 0
 String
@@ -787,7 +787,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

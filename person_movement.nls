@@ -1,5 +1,6 @@
 
 to move-forward [x person]
+  if [pcolor] of patch-ahead 1 != red[
   forward x
   let myx xcor
   let myy ycor
@@ -17,7 +18,7 @@ to move-forward [x person]
      ask link-neighbors [
          set xcor myx
          set ycor myy
-    ]]
+  ]]]
 
 
 end

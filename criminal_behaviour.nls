@@ -29,8 +29,9 @@ to steal-target [ person target ]
    let temp1 [money] of person ; set local variable temp1 to hold criminal's initial balance
    let success-rate [vulnerability] of target ; set local variable success-reate equal to global vulnerability of the victim
    ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
-   ask person [set money temp1 + [money] of target] ; ask criminal to set money of temp1 + temp2
-    ask target[set money 0]]; ask vitim to set money to 0
+     ask person [set money temp1 + [money] of target] ; ask criminal to set money of temp1 + temp2
+     ask target[set money 0 ; ask vitim to set money to 0
+     set vulnerability 0]] ; ask vitim to set vulnerability to 0
   [ask person [move-around-randomly myself]] ;if fail to steal, move around randomly
 end
 
@@ -45,7 +46,7 @@ end
 
 to walk-to-destination [pass destination]
   set heading towards destination
-  fd 1
+  move-forward 1 self
 end 
 
 
@@ -97,10 +98,10 @@ to move-to-q-d [pass target qx-d]
  
     ifelse patch-here = qx-d[
       set heading towards target
-      fd 1
+      move-forward 1 self
       stop][
       set heading towards qx-d
-      fd 1]
+      move-forward 1 self]
 end 
 
   
@@ -125,9 +126,9 @@ to look-for-another-angle [ person target ]
     let distances map [x -> distance x] quadrants 
     let min_distance_index shortest-distance distances 
 
-    ifelse (item min_distance_index target-angle-list = 0)  [ ; if quadrant x is unseen and quadrant x target patch is the nearest
-          move-to-q-d self target (item min_distance_index quadrants) 
-      ] ; set heading to quadrant 1 target patch and fd 1
+      ifelse (item min_distance_index target-angle-list = 0)[ ; if quadrant x is unseen and quadrant x target patch is the nearest and quadrant x is not red (not train line)
+        move-to-q-d self target (item min_distance_index quadrants)
+      ] ; set heading to quadrant target patch and fd 1
       [ 
         let next_to_search_for position 1 target-angle-list
         move-to-q-d self target (item next_to_search_for quadrants) 
@@ -135,7 +136,7 @@ to look-for-another-angle [ person target ]
    [
     print "there is an issue in looking for another angle - not in range"
     set heading towards target ; if person not within this range, face towards target and fd 1
-      fd 1]   ] 
+      move-forward 1 self]   ] 
   
 end
 
@@ -160,7 +161,6 @@ to explore-condition-update [pers]
 end 
 
 
-
 to check-i-should-leave [pers]
   if money > money-crim-happy-with [
    change-objective "leave"
@@ -169,10 +169,10 @@ end
 
 
 
-to criminal_turn_movement_decision [pass target p-num p-type]
+to criminal_turn_movement_decision [pass p-num p-type]
   
   ; interim objective input via API to change objective during the simulation
-   set objective criminal_objective_input ;
+  ; set objective criminal_objective_input ;
 
       check-i-should-leave pass
       if objective = "leave" [
@@ -180,9 +180,10 @@ to criminal_turn_movement_decision [pass target p-num p-type]
         leave-objective pass p-num p-type
       ]
       if objective = "steal_from_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
+        let victim item 0 victim-target ; set victim local variable
         check-i-should-still-steal-arrest pass victim-target
-        follow-target self target
-        steal-target self target  
+        follow-target self victim
+        steal-target self victim  
     ]
       if objective = "explore" [
       print "criminal exploring on:"
@@ -192,10 +193,26 @@ to criminal_turn_movement_decision [pass target p-num p-type]
       explore-condition-update pass
   ]
       if objective = "investigate" [
-      ;first you need to go to him (might require a change in platform) 
-      ; then look from a different angle 
-      ;look-for-another-angle self target
-      investigate-condition-update pass victim-target "steal_from_target"
+        look self
+        let victim item 0 victim-target ; set victim local variable
+        let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
+    
+        ifelse any? passengers in-cone 25 60 != victim [ ; if victim is not in field of view
+          ifelse p-num != [number] of previous-location [ ; if on the wrong platform, change platform
+          set objective-number [number] of previous-location
+          change-platform-step self
+          ][
+          set heading towards previous-location ; if on the right platform, move towards the previous-location
+          move-forward 1 self
+          ]][  
+      set victim-target get-target-properties self victim ; if victim is already in the field of view, update victim-target memory list by calling look and get-target-properties 
+      look-for-another-angle self victim] ; look from a different angle 
+        
+        if patch-here = previous-location and any? passengers in-cone 25 60 != victim[ ; if patch-here is the prevous-location and victim is not in the field of view
+        set objective-number p-num  ; set objective number to patch here and explore this platform
+        change-objective "explore"] ; change objective to explore
+    
+        investigate-condition-update pass victim-target "steal_from_target"
       
   ]
 
