@@ -29,10 +29,12 @@ to steal-target [ person target ]
    let temp1 [money] of person ; set local variable temp1 to hold criminal's initial balance
    let success-rate [vulnerability] of target ; set local variable success-reate equal to global vulnerability of the victim
    ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
-     ask person [set money temp1 + [money] of target] ; ask criminal to set money of temp1 + temp2
+     ask person [set money temp1 + [money] of target ; ask criminal to set money of temp1 + temp2
+     move-around-randomly self] ; once stolen the money, move around randomly
      ask target[set money 0 ; ask vitim to set money to 0
-     set vulnerability 0]] ; ask vitim to set vulnerability to 0
-  [ask person [move-around-randomly myself]] ;if fail to steal, move around randomly
+     set vulnerability 0
+     set aesthetic 0]] ; ask vitim to set aesthetic to 0
+  [ask person [move-around-randomly self]] ;if fail to steal, move around randomly
 end
 
 to leave-objective [person p-num p-type]
@@ -174,16 +176,17 @@ to criminal_turn_movement_decision [pass p-num p-type]
   ; interim objective input via API to change objective during the simulation
   ; set objective criminal_objective_input ;
 
-      check-i-should-leave pass
-      if objective = "leave" [
-        set-objective-to-nearest-exit pass p-num
-        leave-objective pass p-num p-type
+      check-i-should-leave pass ; if criminal gets enough dollas
+      if objective = "leave" [ ; set objective to leave
+        set-objective-to-nearest-exit pass p-num  ; setobjective-number to the nearest exit
+        leave-objective pass p-num p-type ; leave the station
       ]
-      if objective = "steal_from_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
+      if objective = "steal_from_target"[ 
         let victim item 0 victim-target ; set victim local variable
         check-i-should-still-steal-arrest pass victim-target
-        follow-target self victim
-        steal-target self victim  
+        ifelse distance victim > 1[ ; if distance between victim and criminal is more than 1
+          follow-target self victim][ ; follow the victim
+          steal-target self victim] ; if distance between victim and criminak is less than 1, steal the dollas 
     ]
       if objective = "explore" [
       print "criminal exploring on:"
@@ -197,7 +200,7 @@ to criminal_turn_movement_decision [pass p-num p-type]
         let victim item 0 victim-target ; set victim local variable
         let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
     
-        ifelse any? passengers in-cone 25 60 != victim [ ; if victim is not in field of view
+        ifelse  (patch-here != previous-location) and (any? passengers in-cone 25 60 != victim) [ ; if victim is not in field of view
           ifelse p-num != [number] of previous-location [ ; if on the wrong platform, change platform
           set objective-number [number] of previous-location
           change-platform-step self
@@ -208,7 +211,10 @@ to criminal_turn_movement_decision [pass p-num p-type]
       set victim-target get-target-properties self victim ; if victim is already in the field of view, update victim-target memory list by calling look and get-target-properties 
       look-for-another-angle self victim] ; look from a different angle 
         
-        if patch-here = previous-location and any? passengers in-cone 25 60 != victim[ ; if patch-here is the prevous-location and victim is not in the field of view
+    
+        ; Yang: i am not sure if this belongs here or it should be in the investigate-condition-update as it involves chaning objective
+        ; Chris?
+        if (patch-here = previous-location) and (any? passengers in-cone 25 60 != victim)[ ; if patch-here is the previous-location and victim is not in the field of view
         set objective-number p-num  ; set objective number to patch here and explore this platform
         change-objective "explore"] ; change objective to explore
     

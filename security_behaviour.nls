@@ -16,7 +16,7 @@ end
 to security_turn_movement_decision [pass target p-num p-type]
   
   ; interim objective input via API to change objective during the simulation
-   set objective criminal_objective_input ;
+  ; set objective criminal_objective_input ;
 
       check-i-should-leave pass
       if objective = "leave" [
@@ -29,7 +29,7 @@ to security_turn_movement_decision [pass target p-num p-type]
         steal-target self target  
     ]
       if objective = "explore" [
-      look-around self platform-number-explore
+      ;look-around self platform-number-explore
       explore-condition-update pass
   ]
       if objective = "investigate" [

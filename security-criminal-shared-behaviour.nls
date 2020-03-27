@@ -80,7 +80,7 @@ end
 to investigate-condition-update [pers target objective_on_satisfaction]
    print "investigating target = "
    print target
-   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 0.00001) * 1 / (abs (distancexy item 2 target item 3 target) + 0.000001)
+   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 1) * 1 / (abs (distancexy item 2 target item 3 target) + 1)
   
   
    print "desireability" 
@@ -97,7 +97,7 @@ to investigate-condition-update [pers target objective_on_satisfaction]
 end 
 
 to check-i-should-still-steal-arrest [pers target] 
-  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 0.00001) * 1 / (abs (distancexy item 2 target item 3 target) + 0.000001) < give-up-on-target[
+  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 1) * 1 / (abs (distancexy item 2 target item 3 target) + 1) < give-up-on-target[
    ;set objective "explore"
    change-objective "explore"
   ]

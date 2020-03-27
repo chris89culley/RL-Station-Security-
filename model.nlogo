@@ -211,7 +211,7 @@ SWITCH
 446
 show-target-value?
 show-target-value?
-1
+0
 1
 -1000
 
@@ -364,31 +364,9 @@ INPUTBOX
 157
 454
 objective-label
-[(criminal 18) : explore;   ]
+[(criminal 16) : explore;  (security 15) : 0;   ]
 1
 1
-String
-
-INPUTBOX
-1158
-646
-1307
-706
-platform-number-explore
-1.0
-1
-0
-Number
-
-INPUTBOX
-12
-476
-154
-536
-criminal_objective_input
-investigate
-1
-0
 String
 
 INPUTBOX
@@ -430,7 +408,7 @@ INPUTBOX
 1139
 758
 money-crim-happy-with
-100.0
+20.0
 1
 0
 Number
@@ -787,7 +765,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
