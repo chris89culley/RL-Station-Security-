@@ -80,16 +80,21 @@ to security_turn_movement_decision [person]
       change-objective "explore"
       ]
       
-    ]
+      ]
       if objective = "explore" [
-      ;security patrols if nothing peculiar seen
-      patrol-step
-      explore-condition-update person
-  ]
+        ;security patrols if nothing peculiar seen
+        explore 200
+        ;patrol-step
+        explore-condition-update person
+      ]
       if objective = "investigate" [
     
         look self
         let suspect item 0 victim-target ; set suspect local variable
+        if not is-turtle? suspect [
+           change-objective "explore"
+           stop
+        ]
         set victim-target get-target-properties self suspect 
         let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
     

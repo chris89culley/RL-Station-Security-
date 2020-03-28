@@ -74,6 +74,7 @@ end
 
 ; here we decide if we want to move from investigate to steal/arrest or to explore 
 to investigate-condition-update [pers target objective_on_satisfaction]
+   let target-id item 0 target
    print "investigating target = "
    print target
    let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 1) * 1 / (abs (distancexy item 2 target item 3 target) + 1)
@@ -85,6 +86,10 @@ to investigate-condition-update [pers target objective_on_satisfaction]
     change-objective objective_on_satisfaction
   ]
    if des < give-up-on-target [
+    ask target-id[
+      ;decrease suspiciousness by 10%
+      set suspicious-level (suspicious-level * 0.9)
+    ]
     ;set objective "explore"
     change-objective "explore"
   ]
@@ -97,14 +102,14 @@ to check-i-should-still-steal-arrest [pers target]
   ]
 end 
 
-to explore
+to explore [explore-time]
   
   ;maybe add a randomisation around this
   ;let fluctuating-start-tick round random-normal objective-start-tick 10
   
   let time-exploring-platform ticks - objective-start-tick
   
-  if time-exploring-platform mod 100 = 0 [
+  if time-exploring-platform mod explore-time = 0 [
     get-new-platform
   ]
   

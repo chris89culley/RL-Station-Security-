@@ -193,7 +193,7 @@ to criminal_turn_movement_decision [pass p-num p-type]
       if objective = "explore" [
       print "criminal exploring on:"
       print objective-number
-      explore
+      explore 100
       ;look-around self platform-number-explore
       explore-condition-update pass
   ]

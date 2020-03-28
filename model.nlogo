@@ -49,6 +49,7 @@ to go ; the main function called with each tick
     checking-gait self
   ]
 
+  ;if all criminals have left - end the game
   if not any? criminals [set end-state true]
 
   train_turn_movement_decision
@@ -76,7 +77,7 @@ to set-up
   tick-advance 1
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
-  init-people 8 ; create the initial passengers in the station
+  init-people 10 ; create the initial passengers in the station
 
   init-security 1
 
@@ -359,7 +360,7 @@ INPUTBOX
 204
 454
 objective-label
-[(criminal 20) : explore;  (security 19) : investigate;   ]
+[(criminal 24) : explore;  (security 23) : explore;   ]
 1
 1
 String
@@ -370,7 +371,7 @@ INPUTBOX
 1307
 582
 target_desireabiliy
-0.4
+0.6
 1
 0
 Number
@@ -381,7 +382,7 @@ INPUTBOX
 1307
 643
 target_steal_desireability
-0.6
+0.7
 1
 0
 Number
@@ -392,7 +393,7 @@ INPUTBOX
 1307
 768
 give-up-on-target
-0.3
+0.4
 1
 0
 Number
