@@ -1,4 +1,5 @@
 to passenger_turn_movement_decision [pass p-num p-type]
+  if stopped = true [stop]
       ifelse on_the_right_plaform self p-num p-type  [ ; if we are not at the right platform or not on a platform
        ifelse not_at_entrance_and_want_to_leave self p-type  ; if we are on the entrance but don't want to leave
         [move-around-randomly self]

@@ -8,13 +8,13 @@ breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
-globals [platform-size track-size stairs-size bench-col] ;global variables
-passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
+globals [platform-size track-size stairs-size bench-col end-state] ;global variables
+passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level stopped has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
-securities-own [objective objective-start-tick objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic suspicious-level money victim-target] ; features that security can be given
+securities-own [objective objective-start-tick objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic suspicious-level stopped money victim-target] ; features that security can be given
 patches-own [patch-type number visibility] ; features each of the pixels (patches) can be given
 trains-own [max-carriages leaving arriving train-line-number current-carriages stop-tick passenger-count]
-criminals-own [objective objective-start-tick objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability suspicious-level] ; features that criminals can be given
+criminals-own [objective objective-start-tick objective-number money wants-to-exit visible seen aesthetic seen-list has-baggage carrying-baggage gait victim-target judgement vulnerability suspicious-level stopped] ; features that criminals can be given
 baggages-own [owner]
 
 
@@ -30,32 +30,26 @@ end
 
 
 to go ; the main function called with each tick
+
+
+  if(end-state = true)[stop]
+
   ask passengers[
     update_visability self ([visibility] of patch-here)
     passenger_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
     ]
 
   ask securities[
-    ;only action once, when list is 2, obviously this condition will change
-    if (length seen-list = 2)[set actioning true]
-
-    ;if actioning go to target, if not, patrol
-    ifelse actioning = true[
-      ;get target
-      let target get-target self
-      ;if target is alive go into search for target, if dead just look -> this is probably on of the reasons the security stops
-      ifelse(is-turtle? target)[search-for-target self target][look self]
-
-    ]
-    [patrol-step]
+    security_turn_movement_decision self
   ]
 
   ask criminals [
-
     update_visability self ([visibility] of patch-here)
     criminal_turn_movement_decision self ([number] of patch-here) ([patch-type] of patch-here)
     checking-gait self
   ]
+
+  if not any? criminals [set end-state true]
 
   train_turn_movement_decision
   set objective-label (word update_current_objectives)
@@ -70,6 +64,7 @@ to set-up-globals
   set track-size (max-pxcor * 0.1)
   set stairs-size max-pycor * 0.1
   set bench-col green
+  set end-state false
 end
 
 
@@ -81,7 +76,7 @@ to set-up
   tick-advance 1
   set-up-globals ; sets up the global variables
   set-up-station ; create the station layout
-  init-people 7 ; create the initial passengers in the station
+  init-people 8 ; create the initial passengers in the station
 
   init-security 1
 
@@ -139,7 +134,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -361,10 +356,10 @@ String
 INPUTBOX
 12
 340
-157
+204
 454
 objective-label
-[(criminal 16) : explore;  (security 15) : 0;   ]
+[(criminal 20) : explore;  (security 19) : investigate;   ]
 1
 1
 String
@@ -397,7 +392,7 @@ INPUTBOX
 1307
 768
 give-up-on-target
-0.1
+0.3
 1
 0
 Number
@@ -408,7 +403,7 @@ INPUTBOX
 1139
 758
 money-crim-happy-with
-20.0
+200.0
 1
 0
 Number

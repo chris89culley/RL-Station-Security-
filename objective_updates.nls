@@ -13,7 +13,10 @@ to set-objective [person]
       ]
 
   ]
-  if [breed] of person = securities[set objective-number (random 4) + 1]
+  if [breed] of person = securities[
+    set objective "explore"
+    set objective-number (random 4) + 1
+  ]
   if [breed] of person = criminals [set objective-number [number] of patch-here]
 
 end
@@ -42,7 +45,6 @@ end
 to change-objective [new-objective]
 
   ifelse objective = new-objective [
-    print "in correct"
     stop]
   [
   set objective new-objective
@@ -52,7 +54,6 @@ end
 
 to get-new-platform
   print self
-  print ticks
   print "changing platform from" 
   print objective-number
   ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)]

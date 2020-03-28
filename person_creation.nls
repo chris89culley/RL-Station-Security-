@@ -37,6 +37,7 @@ to init_person [pers]
   set suspicious-level  saturate_0_1 random-normal 0.5 0.125
   set label-color black
   set gait "walking"
+  set stopped false
 end
 
 
@@ -73,6 +74,7 @@ to init-criminals [number-to-place]
     set judgement saturate_0_1 random-normal 0.5 0.125
     set suspicious-level  saturate_0_1 random-normal 0.5 0.125
     set objective-start-tick 0
+    set stopped false 
     ]
   ]
 end
@@ -82,6 +84,8 @@ to init-security [number-to-place]
   ask n-of number-to-place (patches with [patch-type = "platform"])[ ; put them on a platform
     sprout-securities 1 [
      init_person self
+     set vulnerability 0.0
+     set aesthetic 0.0
      set color yellow
      set-objective self
      set gait "walking"

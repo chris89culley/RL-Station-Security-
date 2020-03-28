@@ -47,7 +47,7 @@ end
 
 ;maybe change to observe to it reads better?
 to look [person]
-  print person
+  ;print person
   ; get agentset of all turtles that are not me
   let jointset (turtle-set securities criminals passengers) with [self != myself]
   ask person[
@@ -91,7 +91,7 @@ to look [person]
   set seen-list my-list
   ;print was used for debugging
 
-  print seen-list
+ ;print seen-list
   ]
 
 end
@@ -125,3 +125,60 @@ ask person[
   ;return this value
   report dif
 end
+
+
+
+to look-target [person target fill-angles]
+  ;print person
+  ;print target
+  ; get agentset of all turtles that are not me
+  ask person[
+   let my-list seen-list ;create local list -> so it can be used in the function
+   let pass-list [] ;initialise pass-list -> the list of passengers seen
+   let pers self
+   ask target[ ;ask all agents in field of view
+
+      ;go through the memory list create list of passengerIDs that we are looking at
+      foreach my-list [[val]->
+        let person_memory item 0 val
+        ifelse  person_memory = nobody[
+          set my-list remove val my-list
+        ][
+          set pass-list lput item 0 val pass-list
+        ]
+      ]
+      
+      let angle-list [0 0 0 0] ;initialise the quadrant list
+      let angle get-angle myself self
+
+      if member? self pass-list[ ;  ;look for passengerID in pass-list -> this is to determine if the passenger has been seen already
+        let pos position self pass-list  ;find their position and get their properties and store them
+        let properties item pos my-list
+        ifelse (fill-angles = true)[set angle-list [1 1 1 1]][set angle-list item 4 properties]
+        let previous_vuln-susc  (previous_predicted_vuln_susc properties)
+        set my-list remove-item pos my-list
+        set pass-list remove-item pos pass-list
+        ]
+
+        if length my-list >= 50[  ;memory list is 50 values in length so remove the earliest memory -> the first one
+          set my-list check-and-move-security-memory my-list
+          set my-list but-first my-list
+
+        ]
+          set angle-list replace-item (angle-to-quadrant angle) angle-list 1
+          set my-list add_person_details_to_memory angle-list my-list
+          decide-on-concern-level-and-whether-to-make-security-aware  self pers (sum angle-list)
+  ]
+  ; take locally stored my-list and set it as observer's seen-list
+  set seen-list my-list
+  ;print was used for debugging
+
+  ;print seen-list
+  ]
+
+end
+
+
+
+
+

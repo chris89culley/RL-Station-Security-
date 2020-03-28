@@ -2,42 +2,125 @@
 
 to patrol-step
   look self
+  ifelse (heading > 270 or heading < 90) [set heading 0][set heading 180]
   let p-type [patch-type] of patch-here
     let p-num [number] of patch-here
     ifelse on_the_right_plaform self p-num p-type[
       change-platform-step self
     ][
       ; What is this >> ???? >> it chnges the platform
-      ifelse(ycor > max-pycor - 3)[get-new-platform][stroll self]
+      ifelse((ycor > max-pycor - 3) or (ycor < min-pycor + 10 and heading = 180))[get-new-platform][move-forward 1 self]
     ]
 end
 
 
-to security_turn_movement_decision [pass target p-num p-type]
+to question-suspect [person suspect]
+  
+  ;printout says what's happening   
+  print person
+  print "Questioning"
+  print suspect
+  print victim-target
+  
+  ;ask both parties to stop
+  ask person [
+     stand self
+   ]
+   ask suspect [
+     stand self
+     set stopped true
+   ]
+  
+  ;person will 
+   ask person[
+    ;new look function which only updates the target -> 'true' refers to an argument fill-angle-list
+    look-target person suspect true
+    ;now re-evaluate the targets suspicious-level and move into arrest if suspicious enough
+    set victim-target get-target-properties self suspect
+    investigate-condition-update person victim-target "arrest_target"
+   ]
+  
+  ;if person isn't arresting let suspect carry on moving
+  ask suspect[
+   if [objective] of person != "arrest_target" [
+      ask suspect [
+        set suspicious-level 0
+        set stopped false
+      ]
+   ]
+  ]
+  
+end
+
+;largely the same as criminal_turn_movement_decision -> with some changes to objectives
+to security_turn_movement_decision [person]
   
   ; interim objective input via API to change objective during the simulation
   ; set objective criminal_objective_input ;
-
-      check-i-should-leave pass
-      if objective = "leave" [
-        set-objective-to-nearest-exit pass p-num
-        leave-objective pass p-num p-type
+    let p-num [number] of patch-here 
+    let p-type [patch-type] of patch-here
+      
+    if objective = "arrest_target"[ 
+      ;print out arresting status
+      print "in arrest"
+      print victim-target
+      
+      ;get the suspect from victim-target, if they're a criminal end the simulation in next tick
+      let suspect item 0 victim-target
+      ifelse [breed] of suspect = criminals [ 
+      set end-state true 
+      ][ 
+      ;if not a criminal -> set their suspicious-level permanently to 0 and let them carry on
+      ask suspect[
+        print "wrongly accused"
+        set suspicious-level 0
+        set stopped false
       ]
-      if objective = "arrest_target"[ ; need to make sure once we have stolen we make their valuability go down massivley so they don't get picked again 
-        check-i-should-still-steal-arrest pass victim-target
-        follow-target self target
-        steal-target self target  
+      ;go back to exploring
+      change-objective "explore"
+      ]
+      
     ]
       if objective = "explore" [
-      ;look-around self platform-number-explore
-      explore-condition-update pass
+      ;security patrols if nothing peculiar seen
+      patrol-step
+      explore-condition-update person
   ]
       if objective = "investigate" [
-      ;first you need to go to him (might require a change in platform) 
-      ; then look from a different angle 
-      ;look-for-another-angle self target
-      investigate-condition-update pass victim-target "arrest_target"
-      
+    
+        look self
+        let suspect item 0 victim-target ; set suspect local variable
+        set victim-target get-target-properties self suspect 
+        let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
+    
+        ifelse  (patch-here != previous-location) and (any? passengers in-cone 25 60 != suspect) [ ; if victim is not in field of view
+          ifelse p-num != [number] of previous-location [ ; if on the wrong platform, change platform
+             set objective-number [number] of previous-location
+             change-platform-step self
+             ][
+             set heading towards previous-location ; if on the right platform, move towards the previous-location
+             move-forward 1 self
+             ]
+         ][  
+          set victim-target get-target-properties self suspect ; if victim is already in the field of view, update victim-target memory list by calling look and get-target-properties
+          ;get location and go-to
+          let targ-x item 2 victim-target
+          let targ-y item 3 victim-target
+          go-to self targ-x targ-y
+          ;if close enough
+          if (distance suspect < 2)[
+             ;move to questioning the target
+             question-suspect self suspect
+             stop
+             ]
+          ]
+
+        ; Yang: i am not sure if this belongs here or it should be in the investigate-condition-update as it involves chaning objective
+        ; Chris?
+        if (patch-here = previous-location) and (any? passengers in-cone 25 60 != suspect)[ ; if patch-here is the previous-location and victim is not in the field of view
+        set objective-number p-num  ; set objective number to patch here and explore this platform
+        change-objective "explore"] ; change objective to explore
+    
   ]
 
 end

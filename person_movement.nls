@@ -62,7 +62,8 @@ to try-and-exit [person p-num]
      die ; remove suitcases
 
     ]
-       die  ; if we are within 2 pixels of the entrance - leave (die)
+       die
+       if([breed] of person = "criminals")[ set end-state true ] ; if we are within 2 pixels of the entrance - leave (die)
       ][ ; else we face the nearest entrance (we are already at the right platform at this point) and move towards it
         change-platform-step self
         face min-one-of patches with [patch-type = "entrance" and number = p-num] [distance myself]
