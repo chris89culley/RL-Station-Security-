@@ -52,16 +52,8 @@ to question-suspect [person suspect]
   
 end
 
-;largely the same as criminal_turn_movement_decision -> with some changes to objectives
-to security_turn_movement_decision [person]
-  
-  ; interim objective input via API to change objective during the simulation
-  ; set objective criminal_objective_input ;
-    let p-num [number] of patch-here 
-    let p-type [patch-type] of patch-here
-      
-    if objective = "arrest_target"[ 
-      ;print out arresting status
+to attempt_arrest
+   ;print out arresting status
       print "in arrest"
       print victim-target
       
@@ -79,6 +71,19 @@ to security_turn_movement_decision [person]
       ;go back to exploring
       change-objective "explore"
       ]
+  
+end 
+
+;largely the same as criminal_turn_movement_decision -> with some changes to objectives
+to security_turn_movement_decision [person]
+  
+  ; interim objective input via API to change objective during the simulation
+  ; set objective criminal_objective_input ;
+    let p-num [number] of patch-here 
+    let p-type [patch-type] of patch-here
+      
+    if objective = "arrest_target"[ 
+       attempt_arrest
       
       ]
       if objective = "explore" [

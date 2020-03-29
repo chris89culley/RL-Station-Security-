@@ -72,14 +72,32 @@ to-report get-target-properties [person target]
 end
 
 
+to-report desireability-update [target]
+    ; the ticks can contribute up to 1/4 (i.e when they are close) then adds 1/5 1/6 etc as they get further away every 4 away 
+   let tick_contri min (list 0.25 ((1 / ((max (list 1 (ticks - (item 1 target))))))))
+   ; the distance can contribute up to 1/4 (i.e when they are close 
+   let distance_contri min (list 0.25 ( 1 / ((max (list 1 (abs  (distancexy item 2 target item 3 target)))))))
+   ; the familiarity is timesed by (2 * the vuln + 1 * aesthetic) this is all div'd by 3 so can be a maximum of 1 
+   let pred_contri min (list 0.5 (((item 6 target +  2 * item 5 target) * (1 - item 7 target)) / 4))
+   print word "true distance "  (abs (distancexy item 2 target item 3 target))
+   print word "tick component " tick_contri
+   print word "distance component " distance_contri
+   print word "pred component " pred_contri
+   report pred_contri  +  tick_contri  + distance_contri
+
+  
+end 
+
 ; here we decide if we want to move from investigate to steal/arrest or to explore 
 to investigate-condition-update [pers target objective_on_satisfaction]
-   let target-id item 0 target
-   print "investigating target = "
-   print target
-   let des ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 1) * 1 / (abs (distancexy item 2 target item 3 target) + 1)
-   print "desireability" 
-   print des 
+   let target-id item 0 target 
+     
+   
+ 
+   let des desireability-update target 
+   print (word pers " is currently investigating " target " they have a des score of " des) 
+  
+
    if des > target_steal_desireability [
     print "trying to steal or arrest" 
     ;set objective  "steal_from_target"
@@ -96,7 +114,7 @@ to investigate-condition-update [pers target objective_on_satisfaction]
 end 
 
 to check-i-should-still-steal-arrest [pers target] 
-  if  ((item 6 target / 2) + item 5 target) * (1 - item 7 target) * 2 / ((ticks - (item 1 target)) + 1) * 1 / (abs (distancexy item 2 target item 3 target) + 1) < give-up-on-target[
+  if  desireability-update target < give-up-on-target[
    ;set objective "explore"
    change-objective "explore"
   ]

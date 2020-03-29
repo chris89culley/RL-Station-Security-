@@ -135,12 +135,12 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
 NIL
-NIL
+N
 NIL
 NIL
 1
@@ -151,7 +151,7 @@ INPUTBOX
 115
 264
 train-hold-time
-30.0
+10.0
 1
 0
 Number
@@ -173,7 +173,7 @@ INPUTBOX
 1141
 410
 ticks-per-arrival
-20000.0
+30.0
 1
 0
 Number
@@ -184,7 +184,7 @@ INPUTBOX
 1308
 408
 average-arrival-number
-10.0
+5.0
 1
 0
 Number
@@ -195,7 +195,7 @@ INPUTBOX
 118
 333
 who-to-steal
-16.0
+0.0
 1
 0
 Number
@@ -217,7 +217,7 @@ INPUTBOX
 1223
 345
 max_passengers_on_carriages_when_created
-100.0
+20.0
 1
 0
 Number
@@ -228,7 +228,7 @@ INPUTBOX
 1313
 72
 train_1_arrival_tick
-1500.0
+50.0
 1
 0
 Number
@@ -239,7 +239,7 @@ INPUTBOX
 1312
 141
 train_2_arrival_tick
-1800.0
+100.0
 1
 0
 Number
@@ -250,7 +250,7 @@ INPUTBOX
 1312
 208
 train_3_arrival_tick
-1750.0
+130.0
 1
 0
 Number
@@ -261,7 +261,7 @@ INPUTBOX
 1312
 276
 train_4_arrival_tick
-1600.0
+15.0
 1
 0
 Number
@@ -272,7 +272,7 @@ INPUTBOX
 1158
 72
 number_of_carriages_train_1
-10.0
+4.0
 1
 0
 Number
@@ -283,7 +283,7 @@ INPUTBOX
 1158
 145
 number_of_carriages_train_2
-8.0
+5.0
 1
 0
 Number
@@ -294,7 +294,7 @@ INPUTBOX
 1157
 212
 number_of_carriages_train_3
-12.0
+8.0
 1
 0
 Number
@@ -305,7 +305,7 @@ INPUTBOX
 1157
 278
 number_of_carriages_train_4
-15.0
+2.0
 1
 0
 Number
@@ -316,7 +316,7 @@ INPUTBOX
 1140
 571
 percentage_with_bag
-0.2
+0.8
 1
 0
 Number
@@ -327,7 +327,7 @@ INPUTBOX
 1138
 632
 chance-of-putting-down-bag
-1.0
+0.1
 1
 0
 Number
@@ -338,7 +338,7 @@ INPUTBOX
 1307
 520
 chance-of-forget-bag
-1.0E-4
+0.001
 1
 0
 Number
@@ -360,7 +360,7 @@ INPUTBOX
 204
 454
 objective-label
-[(criminal 24) : explore;  (security 23) : explore;   ]
+[(criminal 17) : steal_from_target;  (security 16) : investigate;   ]
 1
 1
 String
@@ -371,7 +371,7 @@ INPUTBOX
 1307
 582
 target_desireabiliy
-0.6
+0.75
 1
 0
 Number
@@ -382,7 +382,7 @@ INPUTBOX
 1307
 643
 target_steal_desireability
-0.7
+0.85
 1
 0
 Number
@@ -393,7 +393,7 @@ INPUTBOX
 1307
 768
 give-up-on-target
-0.4
+0.7
 1
 0
 Number
@@ -404,7 +404,7 @@ INPUTBOX
 1139
 758
 money-crim-happy-with
-200.0
+100.0
 1
 0
 Number
@@ -761,7 +761,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

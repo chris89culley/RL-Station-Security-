@@ -145,14 +145,17 @@ end
 
 to explore-condition-update [pers] 
   
-  let desireability map [x -> ((item 6 x / 2) + item 5 x) * (1 - item 7 x) * 10 / (ticks - (item 1 x) + 1) * 1 / (abs (distancexy item 2 x item 3 x) + 1) ] seen-list 
-  ifelse length seen-list > 0 and max desireability > target_desireabiliy [
+  let desireability map [x ->  desireability-update x] seen-list
+  print word "desireability " desireability 
+  ifelse length seen-list > 0 and (max desireability > target_desireabiliy) [
    ;print "list of desireability calculations"
    ;print desireability 
    ;print "targetting target = " 
    ;set objective "investigate"
+   print "changing to investigate"
    change-objective "investigate"
    set victim-target item position (max desireability) desireability seen-list 
+   print victim-target 
    ;print victim-target
   ][
     ;set objective "explore"
@@ -200,6 +203,8 @@ to criminal_turn_movement_decision [pass p-num p-type]
       if objective = "investigate" [
         look self
         let victim item 0 victim-target ; set victim local variable
+        print victim 
+        print " the victim above"
         let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
     
         ifelse  (patch-here != previous-location) and (any? passengers in-cone 25 60 != victim) [ ; if victim is not in field of view
