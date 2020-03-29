@@ -8,7 +8,7 @@ breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
-globals [platform-size track-size stairs-size bench-col end-state] ;global variables
+globals [platform-size track-size stairs-size bench-col end-state number-crim-robbed] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level stopped has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
 securities-own [objective objective-start-tick objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic suspicious-level stopped money victim-target] ; features that security can be given
@@ -66,6 +66,7 @@ to set-up-globals
   set stairs-size max-pycor * 0.1
   set bench-col green
   set end-state false
+  set number-crim-robbed 0 ; the number of people the criminal has robbed
 end
 
 
@@ -173,7 +174,7 @@ INPUTBOX
 1141
 410
 ticks-per-arrival
-50.0
+80.0
 1
 0
 Number
@@ -360,7 +361,7 @@ INPUTBOX
 204
 454
 objective-label
-[(criminal 15) : steal_from_target;  (security 14) : investigate;   ]
+[(security 16) : investigate;   ]
 1
 1
 String
@@ -408,6 +409,17 @@ money-crim-happy-with
 1
 0
 Number
+
+MONITOR
+15
+153
+88
+198
+robberies
+number-crim-robbed
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
