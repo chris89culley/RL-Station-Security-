@@ -103,7 +103,7 @@ to investigate-condition-update [pers target objective_on_satisfaction]
   
 
    if des > target_steal_desireability [
-    print "trying to steal or arrest" 
+    print (word  "trying to steal or arrest" target)
     ;set objective  "steal_from_target"
     change-objective objective_on_satisfaction
   ]
@@ -152,13 +152,13 @@ end
 to explore-condition-update [pers] 
   
   let desireability map [x ->  desireability-update x] seen-list
-  print (word "desireability " desireability  " list of " pers)
+ ; print (word "desireability " desireability  " list of " pers)
   ifelse length seen-list > 0 and (max desireability > target_desireabiliy) [
 
-   print "changing to investigate"
+   
    change-objective "investigate"
    set victim-target item position (max desireability) desireability seen-list 
-   print victim-target 
+   print (word pers " is changing to investigate" victim-target)
    ;print victim-target
   ][
     ;set objective "explore"

@@ -17,10 +17,8 @@ end
 to question-suspect [person suspect]
   
   ;printout says what's happening   
-  print person
-  print "Questioning"
-  print suspect
-  print victim-target
+  print (word person " is  questioning " suspect)
+
   
   ;ask both parties to stop
   ask person [
@@ -54,8 +52,8 @@ end
 
 to attempt_arrest
    ;print out arresting status
-      print "in arrest"
-      print victim-target
+
+      print (word " arresting "  victim-target)
       
       ;get the suspect from victim-target, if they're a criminal end the simulation in next tick
       let suspect item 0 victim-target

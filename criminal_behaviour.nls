@@ -26,6 +26,7 @@ end
 
 
 to steal-target [ person target ]
+   carefully [
    let temp1 [money] of person ; set local variable temp1 to hold criminal's initial balance
    let success-rate [vulnerability] of target ; set local variable success-reate equal to global vulnerability of the victim
    ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
@@ -35,7 +36,8 @@ to steal-target [ person target ]
      ask target[set money 0 ; ask vitim to set money to 0
      set vulnerability 0
      set aesthetic 0]] ; ask vitim to set aesthetic to 0
-  [ask person [move-around-randomly self]] ;if fail to steal, move around randomly
+    [ask person [move-around-randomly self]]] ;if fail to steal, move around randomly]
+    [move-around-randomly self]
 end
 
 to leave-objective [person p-num p-type]
@@ -124,8 +126,7 @@ to look-for-another-angle [ person target ]
     
     let headings map [ x -> heading-setup self [heading] of target x ] (list 10 100 190 280) 
     let quadrants map [ x -> patch-right-and-ahead x r] headings 
-    print "quadrants" 
-    print quadrants
+
     if position nobody quadrants != FALSE[
      set quadrants replace-item (position nobody quadrants) quadrants (patch 100 100)  ; here we stop the bug when the patch isn't there 
     ]

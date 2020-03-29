@@ -361,7 +361,7 @@ INPUTBOX
 204
 454
 objective-label
-[(security 16) : investigate;   ]
+[(criminal 16) : leave;  (security 15) : investigate;   ]
 1
 1
 String

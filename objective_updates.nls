@@ -53,12 +53,9 @@ to change-objective [new-objective]
 end
 
 to get-new-platform
-  print self
-  print "changing platform from" 
-  print objective-number
+  let old-objective-number objective-number
   ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)]
-  print "to" 
-  print objective-number
+  print word self " is changing platform from " old-objective-number " to " objective-number
 end
 
 
