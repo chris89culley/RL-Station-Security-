@@ -181,8 +181,7 @@ to criminal_turn_movement_decision [pass p-num p-type]
           steal-target self victim] ; if distance between victim and criminak is less than 1, steal the dollas 
     ]
       if objective = "explore" [
-      print "criminal exploring on:"
-      print objective-number
+
       explore 100
       ;look-around self platform-number-explore
       explore-condition-update pass
