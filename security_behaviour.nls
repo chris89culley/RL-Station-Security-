@@ -18,7 +18,7 @@ to question-suspect [person suspect]
   
   ;printout says what's happening   
   print (word person " is  questioning " suspect)
-
+  set number-secur-questioned number-secur-questioned  + 1
   
   ;ask both parties to stop
   ask person [
