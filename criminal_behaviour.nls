@@ -30,7 +30,8 @@ to steal-target [ person target ]
    let success-rate [vulnerability] of target ; set local variable success-reate equal to global vulnerability of the victim
    ifelse random-float 1 < success-rate [ ; generate random floating number betwwen 0 and 1, if the number is less than the success-rate
      ask person [set money temp1 + [money] of target ; ask criminal to set money of temp1 + temp2
-     move-around-randomly self] ; once stolen the money, move around randomly
+     move-around-randomly self
+     print "steal success"] ; once stolen the money, move around randomly
      ask target[set money 0 ; ask vitim to set money to 0
      set vulnerability 0
      set aesthetic 0]] ; ask vitim to set aesthetic to 0
@@ -111,7 +112,10 @@ to look-for-another-angle [ person target ]
   ask person [
     
     ifelse distance target < 10 [
+    if distance target != 0[
     set heading towards target ; set heading towards target at the start of each tick
+      ]
+      
     look self ; initiate look operation function
     
     let properties get-target-properties self target ; get properties of the target
@@ -143,27 +147,7 @@ to look-for-another-angle [ person target ]
 end
 
 
-to explore-condition-update [pers] 
-  
-  let desireability map [x ->  desireability-update x] seen-list
-  print word "desireability " desireability 
-  ifelse length seen-list > 0 and (max desireability > target_desireabiliy) [
-   ;print "list of desireability calculations"
-   ;print desireability 
-   ;print "targetting target = " 
-   ;set objective "investigate"
-   print "changing to investigate"
-   change-objective "investigate"
-   set victim-target item position (max desireability) desireability seen-list 
-   print victim-target 
-   ;print victim-target
-  ][
-    ;set objective "explore"
-    change-objective "explore"
-  ]
-  
-  
-end 
+
 
 
 to check-i-should-leave [pers]
@@ -187,9 +171,10 @@ to criminal_turn_movement_decision [pass p-num p-type]
         leave-objective pass p-num p-type ; leave the station
       ]
       if objective = "steal_from_target"[ 
+        print "objective steal"
         let victim item 0 victim-target ; set victim local variable
         check-i-should-still-steal-arrest pass victim-target
-        ifelse distance victim > 1[ ; if distance between victim and criminal is more than 1
+        ifelse victim != nobody and distance victim > 1 [ ; if distance between victim and criminal is more than 1
           follow-target self victim][ ; follow the victim
           steal-target self victim] ; if distance between victim and criminak is less than 1, steal the dollas 
     ]
@@ -203,8 +188,6 @@ to criminal_turn_movement_decision [pass p-num p-type]
       if objective = "investigate" [
         look self
         let victim item 0 victim-target ; set victim local variable
-        print victim 
-        print " the victim above"
         let previous-location patch (item 2 victim-target)(item 3 victim-target) ; set patch target as the last seen location of victim
     
         ifelse  (patch-here != previous-location) and (any? passengers in-cone 25 60 != victim) [ ; if victim is not in field of view

@@ -30,7 +30,7 @@ end
 
 
 to call-in-concern [pass concerned-about] 
-  print "MAKING SECURITY AWARE" 
+  
   print concerned-about 
   print [xcor] of pass 
   print [ycor] of pass 

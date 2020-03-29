@@ -64,6 +64,10 @@ to-report get-target-properties [person target]
   let pos position target target-list
   
   ;not sure why I put this in an ask function.. but it sets the target properties to those in the same position as the target in target-list
+  if pos = False[
+    print target
+    print "the above wasn't in the list"
+  ]
   
   set target-properties item pos seen-list
   
@@ -79,10 +83,10 @@ to-report desireability-update [target]
    let distance_contri min (list 0.25 ( 1 / ((max (list 1 (abs  (distancexy item 2 target item 3 target)))))))
    ; the familiarity is timesed by (2 * the vuln + 1 * aesthetic) this is all div'd by 3 so can be a maximum of 1 
    let pred_contri min (list 0.5 (((item 6 target +  2 * item 5 target) * (1 - item 7 target)) / 4))
-   print word "true distance "  (abs (distancexy item 2 target item 3 target))
-   print word "tick component " tick_contri
-   print word "distance component " distance_contri
-   print word "pred component " pred_contri
+  ; print word "true distance "  (abs (distancexy item 2 target item 3 target))
+  ; print word "tick component " tick_contri
+  ; print word "distance component " distance_contri
+  ; print word "pred component " pred_contri
    report pred_contri  +  tick_contri  + distance_contri
 
   
@@ -104,10 +108,11 @@ to investigate-condition-update [pers target objective_on_satisfaction]
     change-objective objective_on_satisfaction
   ]
    if des < give-up-on-target [
+    if target-id != nobody[
     ask target-id[
       ;decrease suspiciousness by 10%
       set suspicious-level (suspicious-level * 0.9)
-    ]
+    ]]
     ;set objective "explore"
     change-objective "explore"
   ]
@@ -142,6 +147,26 @@ to explore [explore-time]
   
 end
 
+
+
+to explore-condition-update [pers] 
+  
+  let desireability map [x ->  desireability-update x] seen-list
+  print (word "desireability " desireability  " list of " pers)
+  ifelse length seen-list > 0 and (max desireability > target_desireabiliy) [
+
+   print "changing to investigate"
+   change-objective "investigate"
+   set victim-target item position (max desireability) desireability seen-list 
+   print victim-target 
+   ;print victim-target
+  ][
+    ;set objective "explore"
+    change-objective "explore"
+  ]
+  
+  
+end 
 
 to-report fill-angles [person target]
   

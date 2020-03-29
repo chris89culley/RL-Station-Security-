@@ -135,7 +135,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -173,7 +173,7 @@ INPUTBOX
 1141
 410
 ticks-per-arrival
-30.0
+50.0
 1
 0
 Number
@@ -217,7 +217,7 @@ INPUTBOX
 1223
 345
 max_passengers_on_carriages_when_created
-20.0
+5.0
 1
 0
 Number
@@ -360,7 +360,7 @@ INPUTBOX
 204
 454
 objective-label
-[(criminal 17) : steal_from_target;  (security 16) : investigate;   ]
+[(criminal 15) : steal_from_target;  (security 14) : investigate;   ]
 1
 1
 String

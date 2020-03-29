@@ -34,7 +34,7 @@ to init_person [pers]
   set vulnerability  saturate_0_1 random-normal 0.5 0.125
   set aesthetic saturate_0_1 random-normal 0.5 0.125
   set money ((aesthetic * random-normal 0 1 * 10) + (aesthetic * 50))
-  set suspicious-level  saturate_0_1 random-normal 0.5 0.125
+  set suspicious-level  saturate_0_1 random-normal 0.3 0.125
   set label-color black
   set gait "walking"
   set stopped false
@@ -72,7 +72,8 @@ to init-criminals [number-to-place]
     set seen-list []
     set objective criminal_init_objective
     set judgement saturate_0_1 random-normal 0.5 0.125
-    set suspicious-level  saturate_0_1 random-normal 0.5 0.125
+    set aesthetic saturate_0_1 random-normal 0.8 0.125 ; we make this high to encourage security to capture 
+    set suspicious-level  saturate_0_1 random-normal 0.9 0.125 ; and this 
     set objective-start-tick 0
     set stopped false 
     ]
