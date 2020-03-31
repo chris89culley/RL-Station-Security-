@@ -21,8 +21,8 @@ end
 
 ; high vuln = 1 low = 0 
 to decide-on-concern-level-and-whether-to-make-security-aware [pass concerned-about angles-seen-from]
-  if [breed] of pass = criminals[
-  let prob 0.01 * (1 - vulnerability) + 0.01 * angles-seen-from
+  if [breed] of concerned-about = criminals[
+  let prob  0.01 * (1 - vulnerability) + 0.01 * angles-seen-from
   if random-float 1 < prob [
     call-in-concern pass concerned-about
   ]
@@ -31,6 +31,7 @@ end
 
 
 to call-in-concern [pass concerned-about] 
+  increase_suspicion_level concerned-about xcor ycor 
   print (word pass " is calling in about " concerned-about)
 
 end

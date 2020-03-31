@@ -1,4 +1,4 @@
-__includes["train_movement.nls" "station_builder.nls" "person_movement.nls" "person_creation.nls" "security_behaviour.nls" "criminal_behaviour.nls" "passenger_behaviour.nls" "sight_and_memory_updates.nls" "objective_updates.nls" "utility.nls" "security-criminal-shared-behaviour.nls"]
+__includes["train_movement.nls" "station_builder.nls" "person_movement.nls" "reporters.nls" "person_creation.nls" "security_behaviour.nls" "criminal_behaviour.nls" "passenger_behaviour.nls" "sight_and_memory_updates.nls" "objective_updates.nls" "utility.nls" "security-criminal-shared-behaviour.nls"]
 
 extensions [array]
 
@@ -8,7 +8,7 @@ breed [securities security] ;This is how we define new breeds
 breed [criminals criminal]
 breed [passengers passenger]
 breed [trains train]
-globals [platform-size track-size stairs-size bench-col end-state number-crim-robbed number-secur-questioned] ;global variables
+globals [platform-size track-size stairs-size bench-col end-state number-crim-robbed number-secur-questioned crim-id sec-id] ;global variables
 passengers-own [objective objective-number wants-to-exit visible seen money vulnerability aesthetic suspicious-level stopped has-baggage carrying-baggage gait train_board_ticks] ; features that passengers can be given
 cameras-own [fov dis]
 securities-own [objective objective-start-tick objective-number at-platform moving seen-list has-baggage aesthetic carrying-baggage gait actioning judgement vulnerability aesthetic suspicious-level stopped money victim-target] ; features that security can be given
@@ -53,7 +53,6 @@ to go ; the main function called with each tick
   if not any? criminals [set end-state true]
 
   train_turn_movement_decision
-  set objective-label (word update_current_objectives)
   tick-advance 1 ; move time forward
 end
 
@@ -87,13 +86,13 @@ to set-up
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+334
 10
-978
-779
+981
+658
 -1
 -1
-10.0
+8.41
 1
 10
 1
@@ -148,10 +147,10 @@ NIL
 1
 
 INPUTBOX
-15
-204
-115
-264
+993
+450
+1093
+510
 train-hold-time
 10.0
 1
@@ -187,17 +186,6 @@ INPUTBOX
 408
 average-arrival-number
 5.0
-1
-0
-Number
-
-INPUTBOX
-13
-273
-118
-333
-who-to-steal
-0.0
 1
 0
 Number
@@ -357,17 +345,6 @@ explore
 String
 
 INPUTBOX
-12
-340
-204
-454
-objective-label
-[(criminal 15) : explore;  (security 14) : arrest_target;   ]
-1
-1
-String
-
-INPUTBOX
 1158
 522
 1307
@@ -429,6 +406,83 @@ MONITOR
 149
 questioned
 number-secur-questioned
+17
+1
+11
+
+MONITOR
+15
+13
+101
+58
+criminal
+crim-id
+17
+1
+11
+
+MONITOR
+14
+59
+102
+104
+NIL
+sec-id
+17
+1
+11
+
+MONITOR
+16
+202
+328
+247
+NIL
+target-criminal
+17
+1
+11
+
+MONITOR
+17
+251
+142
+296
+NIL
+objective-criminal
+17
+1
+11
+
+MONITOR
+14
+300
+286
+345
+NIL
+target-security
+17
+1
+11
+
+MONITOR
+149
+251
+274
+296
+NIL
+objective-security
+17
+1
+11
+
+MONITOR
+95
+152
+182
+197
+NIL
+criminal-cash
 17
 1
 11
@@ -785,7 +839,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.2
+NetLogo 6.1.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

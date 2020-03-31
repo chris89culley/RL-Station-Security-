@@ -85,7 +85,8 @@ to look [person]
         ]
           set angle-list replace-item (angle-to-quadrant angle) angle-list 1
           set my-list add_person_details_to_memory angle-list my-list
-          decide-on-concern-level-and-whether-to-make-security-aware  self pers (sum angle-list)
+      if [breed] of self = passengers [
+        decide-on-concern-level-and-whether-to-make-security-aware  self pers (sum angle-list)]
   ]
   ; take locally stored my-list and set it as observer's seen-list
   set seen-list my-list

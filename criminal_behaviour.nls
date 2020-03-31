@@ -36,7 +36,13 @@ to steal-target [ person target ]
      ask target[set money 0 ; ask vitim to set money to 0
      set vulnerability 0
      set aesthetic 0]] ; ask vitim to set aesthetic to 0
-    [ask person [move-around-randomly self]]] ;if fail to steal, move around randomly]
+    [
+      call-in-concern target person 
+      set objective "explore" 
+      ask target [
+      set vulnerability 0
+      ]    
+  ]] ;if fail to steal, move around randomly]
     [move-around-randomly self]
 end
 
@@ -55,37 +61,6 @@ to walk-to-destination [pass destination]
 end 
 
 
-to look-around [person platform-number] ; pass in the objective platform that crimanl needs to explore
-  ask person[
-    look self ; initiate look operation function
-    let p-num [number] of patch-here ;set the current platform number of the patch here
-    let p-type [patch-type] of patch-here ; set the type of patch here
-    set objective-number platform-number ; set global objective-number of the criminal to the input platform-number argument (input through GUI)
-    
-    let x xcor ;set the current xcor local value
-    let y_north max-pycor * 0.9 ;set the local ycor of north platform
-    let y_south max-pycor * 0.2 ; set the local ycor of south platform
-    let destination-north patch x y_north ; set the local north destination
-    let destination-south patch x y_south ; set the local south destination
-    
-    ifelse (p-num = objective-number and p-type = "platform") or (p-num = objective-number and p-type = "entrance")[ ; if we are on the right platform
-      ifelse y_north > ycor and heading = 0[ ; if we are not north enough towards the north side of the platform and heading is north
-        ifelse (patch-here = destination-north) [ ; if we are on the north destination location
-          walk-to-destination self destination-south ; face south and walk towards south destination location
-          ][
-          walk-to-destination self destination-north ; if not on the north destination location, keep walking north
-          ]
-      ][
-        ifelse patch-here = destination-south [ ; if on the south destination location
-          walk-to-destination self destination-north ; face north and walk towards north destination location
-          ][ ; 
-          walk-to-destination self destination-south ; if not on the south destination location then keep heading south
-          ]]
-       ][
-    change-platform-step self] ; if on the wrong platform then keep changing platform
-  ]
-  
-end
 
 
 to-report shortest-distance [distances]

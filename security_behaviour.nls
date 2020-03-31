@@ -57,7 +57,8 @@ to attempt_arrest
       
       ;get the suspect from victim-target, if they're a criminal end the simulation in next tick
       let suspect item 0 victim-target
-      ifelse [breed] of suspect = criminals [ 
+      ifelse [breed] of suspect = criminals [
+      print "SECURITY WINS" 
       set end-state true 
       ][ 
       ;if not a criminal -> set their suspicious-level permanently to 0 and let them carry on
@@ -70,6 +71,33 @@ to attempt_arrest
       change-objective "explore"
       ]
   
+end 
+
+; to increase the suspicion level we simply increase the number of angles with which we have seen them from
+to increase_suspicion_level [person x y]
+  ask sec-id [
+    let pos -1
+    let person-memory False 
+  
+  foreach seen-list [[val]->
+    if item 0 val = person [
+        set pos position val seen-list 
+        set person-memory val
+     ]   
+   ]
+
+    ifelse pos > 0 [ ; we simply increase the number of angles with which we have seen them from
+      set person-memory replace-item 4 person-memory [1 1 1 1]
+      set person-memory replace-item 2 person-memory x
+      set person-memory replace-item 3 person-memory y
+      set seen-list replace-item pos seen-list person-memory 
+    ][
+      set objective-number [number] of patch x y     
+    ]
+    
+  ]
+
+
 end 
 
 ;largely the same as criminal_turn_movement_decision -> with some changes to objectives
