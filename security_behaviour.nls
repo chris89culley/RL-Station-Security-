@@ -121,7 +121,9 @@ to security_turn_movement_decision [person]
         ;patrol-step
         explore-condition-update person
       ]
+
       if objective = "investigate--don't run" [
+
     
         look self
         let suspect item 0 victim-target ; set suspect local variable
@@ -152,7 +154,7 @@ to security_turn_movement_decision [person]
              question-suspect self suspect
              stop
              ]
-          ]
+    ]
 
         if (patch-here = previous-location) and (any? passengers in-cone 25 60 != suspect)[ ; if patch-here is the previous-location and victim is not in the field of view
         set objective-number p-num  ; set objective number to patch here and explore this platform
@@ -189,10 +191,11 @@ to security_turn_movement_decision [person]
         if (patch-here = previous-location) and (any? passengers in-cone 25 60 != suspect)[ ; if patch-here is the previous-location and victim is not in the field of view
         set objective-number p-num  ; set objective number to patch here and explore this platform
         change-objective "explore"] ; change objective to explore
-    
+
         investigate-condition-update person victim-target "arrest_target"
       
   ]
+
 
 end
  

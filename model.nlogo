@@ -136,7 +136,7 @@ BUTTON
 138
 NIL
 go\n\n
-T
+NIL
 1
 T
 OBSERVER
