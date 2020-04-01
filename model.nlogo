@@ -136,7 +136,7 @@ BUTTON
 138
 NIL
 go\n\n
-NIL
+T
 1
 T
 OBSERVER
@@ -207,7 +207,7 @@ INPUTBOX
 1223
 345
 max_passengers_on_carriages_when_created
-5.0
+2.0
 1
 0
 Number
@@ -350,7 +350,7 @@ INPUTBOX
 1307
 582
 target_desireabiliy
-0.75
+0.8
 1
 0
 Number
@@ -361,7 +361,7 @@ INPUTBOX
 1307
 643
 target_steal_desireability
-0.85
+0.88
 1
 0
 Number
@@ -383,7 +383,7 @@ INPUTBOX
 1139
 758
 money-crim-happy-with
-100.0
+200.0
 1
 0
 Number

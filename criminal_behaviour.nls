@@ -1,4 +1,4 @@
-;only call follow-target when target is in field of view
+nn;only call follow-target when target is in field of view
 to follow-target [person target]
   ask person [
     let p-type [patch-type] of patch-here  ; set the current patch type
