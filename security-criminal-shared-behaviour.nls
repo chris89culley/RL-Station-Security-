@@ -79,9 +79,9 @@ end
 
 to-report desireability-update [target]
     ; the ticks can contribute up to 1/4 (i.e when they are close) then adds 1/5 1/6 etc as they get further away every 4 away 
-   let tick_contri min (list 0.4 ((1 / ((max (list 1 (ticks - (item 1 target))))))))
+   let tick_contri min (list 0.45 ((1 / ((max (list 1 (ticks - (item 1 target))))))))
    ; the distance can contribute up to 1/4 (i.e when they are close 
-   let distance_contri min (list 0.1 ( 1 / ((max (list 1 (abs  (distancexy item 2 target item 3 target)))))))
+   let distance_contri min (list 0.05 ( 1 / ((max (list 1 (abs  (distancexy item 2 target item 3 target)))))))
    ; the familiarity is timesed by (2 * the vuln + 1 * aesthetic) this is all div'd by 3 so can be a maximum of 1 
    let pred_contri min (list 0.5 (((item 6 target +  2 * item 5 target) * (1 - item 7 target)) / 4))
   ; print word "true distance "  (abs (distancexy item 2 target item 3 target))
