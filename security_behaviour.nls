@@ -119,6 +119,7 @@ to security_turn_movement_decision [person]
         explore-condition-update person
       ]
       if objective = "investigate" [
+            ifelse member? victim-target seen-list [
     
         look self
         let suspect item 0 victim-target ; set suspect local variable
@@ -149,7 +150,7 @@ to security_turn_movement_decision [person]
              question-suspect self suspect
              stop
              ]
-          ]
+    ]
 
         ; Yang: i am not sure if this belongs here or it should be in the investigate-condition-update as it involves chaning objective
         ; Chris?
@@ -157,7 +158,7 @@ to security_turn_movement_decision [person]
         set objective-number p-num  ; set objective number to patch here and explore this platform
         change-objective "explore"] ; change objective to explore
     
-  ]
+  ][ change-objective "explore" set victim-target 0 ]]
 
 end
  
