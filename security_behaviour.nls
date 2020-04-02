@@ -119,8 +119,11 @@ to security_turn_movement_decision [person]
         explore-condition-update person
       ]
       if objective = "investigate" [
-            ifelse member? victim-target seen-list [
-    
+        if ((ticks - objective-start-tick) > 100) [
+        change-objective "explore"
+        stop
+        ] 
+        ifelse member? victim-target seen-list [
         look self
         let suspect item 0 victim-target ; set suspect local variable
         if not is-turtle? suspect [
