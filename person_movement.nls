@@ -1,6 +1,6 @@
 
 to move-forward [x person]
-  if [pcolor] of patch-ahead 1 != red[
+  if [patch-type] of patch-ahead 1 != "line" [
   forward x
   let myx xcor
   let myy ycor
@@ -245,35 +245,35 @@ end
 to face-target-forward-one [person target]
   ask person[
     set heading towards target
-    fd 1
+    move-forward 1 self
   ]
 end
 
 to face-south-forward-one [person]
   ask person[
     set heading 180
-    fd 1
+    move-forward 1 self
   ]
 end
 
 to face-east-forward-one [person]
   ask person[
     set heading 90
-    fd 1
+    move-forward 1 self
   ]
 end
 
 to face-west-forward-one [person]
   ask person[
     set heading 270
-    fd 1
+    move-forward 1 self
   ]
 end
 
 to face-north-forward-one [person]
   ask person[
     set heading 0
-    fd 1
+    move-forward 1 self
   ]
 end
 
