@@ -96,7 +96,7 @@ to go-to [person x y]
           move-towards-the-stairs self
         ]
       ][
-        forward 1
+        move-forward 1 self
     ]] ; go to the platform that target is on
         [stop]
     ; move one step forwards towards the victim
