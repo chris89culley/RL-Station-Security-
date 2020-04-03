@@ -88,6 +88,8 @@ end
 to look-for-another-angle [ person target ]
   ask person [
     
+    carefully [
+    
     ifelse distance target < 10 [
     if distance target != 0[
     set heading towards target ; set heading towards target at the start of each tick
@@ -119,7 +121,9 @@ to look-for-another-angle [ person target ]
    [
     print "there is an issue in looking for another angle - not in range"
     set heading towards target ; if person not within this range, face towards target and fd 1
-      move-forward 1 self]   ] 
+        move-forward 1 self]][
+      print error-message]
+  ] 
   
 end
 
