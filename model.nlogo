@@ -383,7 +383,7 @@ INPUTBOX
 1139
 758
 money-crim-happy-with
-150.0
+100.0
 1
 0
 Number
