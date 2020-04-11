@@ -1,0 +1,11 @@
+to-report saturate_0_1 [x]
+  report min list 1 (max list 0 x)
+end
+
+
+
+
+
+to-report append-word [w xs]
+  report map [[x] -> (word w " " x)] xs
+end

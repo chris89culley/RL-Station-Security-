@@ -1,0 +1,160 @@
+
+
+; Trains that are learning move forward and when they reach the edge they die
+to leaving_train_move
+  ask trains with [leaving = true][
+    forward 1
+    if (ycor >= max-pycor or ycor <= max-pycor * 0.1)[
+      ask link-neighbors[ ; Anyone moving off screen
+       die
+      ]
+     die
+    ]
+  ]
+
+
+end
+
+
+; passenger arrival function
+to arrive [t]
+ set arriving false
+ set stop-tick ticks ; grab the tick count so we can know how long we've been here
+ let coming-off random passenger-count ; a random number of passengers that we want to leave
+ ask min-one-of (patches with [patch-type = "platform"]) [distance myself][ ; get patches near the train where the passengers can disambark to
+  sprout-passengers coming-off [ ; create the passengers that leave the train
+     init_person myself
+     set train_board_ticks ticks + max list 0 random-normal 150 150
+     set-objective self ; set objective function called to set where they want to go
+     set has-baggage (random-float 1 > percentage_with_bag)
+     set carrying-baggage has-baggage
+     let noob self
+     ask patch-here [
+       link-baggage self noob
+      ]
+  ]
+
+  ]
+  set passenger-count passenger-count - coming-off ; adjust the counts
+  set label passenger-count ; this label is the one shown on screen
+end
+
+
+
+
+
+to check_train_leave ; lets see if any trains need to leave
+  ask trains with [arriving = false][  ; if they have arrived and the number of ticks is greater than the hold time, start to leave
+    if ticks - stop-tick > train-hold-time [
+      set leaving true
+    ]
+  ]
+end
+
+
+to update-carriage-count [added line]
+  if added[
+  ask trains with [arriving  = true and train-line-number = line][
+      set current-carriages current-carriages + 1
+        ]
+      ]
+
+end
+
+to train_turn_movement_decision
+    let arriving-lines  remove-duplicates [train-line-number] of trains with [arriving = true] ; gets a list of arriving trains
+    foreach arriving-lines [ ? -> continue_arriving ? ] ; for all of these arriving trains - keep trying to arrive
+    check_train_leave ; check if any of the trains are due to leave
+    leaving_train_move ; keep leaving trains leaving
+     add-new-passengers ; maybe add some new passengers
+     train-arrivals-check
+end
+
+
+to add_carriages [line]
+  let added false ; have we added an extra carriage in this tick
+    ask trains with [arriving  = true and train-line-number = line][
+    let head heading - 180 ; this is the direction behind us
+   carefully [ ; this means we don't break if there are errors
+      let patch-behind patch-at-heading-and-distance head 2 ; we create a new carriage 2 patches behind us
+      if not added and current-carriages < max-carriages and not any? trains-on patch-behind and [patch-type] of patch-behind = "line" [
+       hatch 1 [ ; create new carriage (that has the same attributes as the current one)
+          set passenger-count random max_passengers_on_carriages_when_created; randomly assign the number of passengers
+          set label passenger-count
+          bk 2 ; move back two
+        ]
+      set added true ; we've added something
+    ]][ let x 0]
+
+]
+
+  update-carriage-count added line
+
+end
+
+; if the train is yet to find a good place to stop
+to continue_arriving [line]
+  ask trains with [arriving = true and train-line-number = line] [ ; ask all trains still arriving
+   forward  1 ; move forward
+   let p-ahead patch-ahead 10 ; here we check that the patch 10 places ahead isn't a corridor or empty, if it is STOP
+    if p-ahead = nobody or [patch-type] of p-ahead = "corridor" [
+      ask trains with [arriving = true and train-line-number = line][ ; ask all the carriages to stop (arrive)
+        arrive myself
+        ]
+    ]
+  ]
+
+  add_carriages line ; add some carriages
+end
+
+to setup_the_carraige [t line_number no_carriages head]
+        set train-line-number  line_number
+        set max-carriages no_carriages
+        set current-carriages 0
+        set passenger-count max_passengers_on_carriages_when_created
+        set arriving true
+        set leaving false
+        set shape "truck"
+        set heading head ; which way it starts facing
+        set size 2
+        set label passenger-count ; lets label the number of passengers on the carriage
+end
+
+; lets start the process of a train arriving
+to train_arrive [line_number no_carriages] ; what line and how many carriages
+    let start_x 0
+    let start_y 0
+    let head 0
+    ifelse (line_number mod 2 = 0)[ ; do we start from the top or the bottom
+      set start_x max [pxcor] of patches with [patch-type = "line" and number = line_number]
+      set start_x start_x - 2
+      set start_y max [pycor] of patches with [patch-type = "line" and number = line_number]
+      set head 180
+
+    ][
+       set start_x min [pxcor] of patches with [patch-type = "line" and number = line_number]
+       set start_y min [pycor] of patches with [patch-type = "line" and number = line_number]]
+       set start_x start_x + 1
+       ask patch start_x  start_y [ ; at the starting patch create a train
+       sprout-trains 1 [
+        setup_the_carraige myself line_number no_carriages head 
+      ]
+         ]
+
+end
+
+
+to train-arrivals-check
+  if ticks mod train_1_arrival_tick = 0 [
+    train_arrive 1 number_of_carriages_train_1
+  ]
+  if ticks mod train_2_arrival_tick = 0 [
+    train_arrive 2 number_of_carriages_train_2
+  ]
+    if ticks mod train_3_arrival_tick = 0 [
+    train_arrive 3 number_of_carriages_train_3
+  ]
+    if ticks mod train_4_arrival_tick = 0 [
+    train_arrive 4 number_of_carriages_train_4
+  ]
+end

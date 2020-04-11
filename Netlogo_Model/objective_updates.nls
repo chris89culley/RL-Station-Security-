@@ -1,0 +1,61 @@
+; creates an objective for a passenger leaving a train (arriving in the station)
+to set-objective [person]
+  if [breed] of person = passengers[
+  let rand random-float 1
+     ifelse rand < 0.2[  ; if the random number is less than 2 then they are wanting to leave
+      set color pink ; just to see them
+      set wants-to-exit true
+      ifelse rand < 0.1[   ; do they want to leave from platform 1 or 4
+          set objective-number 1][set objective-number 4]
+      ][ ; else we set a platform number for them to aim for
+       set wants-to-exit false
+        set objective-number (random 4) + 1
+      ]
+
+  ]
+  if [breed] of person = securities[
+    set objective "explore"
+    set objective-number (random 4) + 1
+  ]
+  if [breed] of person = criminals [set objective-number [number] of patch-here]
+
+end
+
+
+
+to set-objective-to-nearest-exit [person p-num]
+  ifelse p-num >= 3[
+    set objective-number 4
+  ][
+   set objective-number 1 
+  ]
+end 
+  
+to-report update_current_objectives 
+  let objectives (list " ") 
+  ask securities[
+    set objectives append-word    (word self " : "  objective "; " ) objectives
+  ]
+  ask criminals [
+   set objectives append-word    (word self " : "  objective "; "  ) objectives
+  ]
+  report objectives 
+end
+
+to change-objective [new-objective]
+
+  ifelse objective = new-objective [
+    stop]
+  [
+  set objective new-objective
+  set objective-start-tick ticks
+  ]
+end
+
+to get-new-platform
+  let old-objective-number objective-number
+  ifelse (objective-number = 4)[set objective-number 1][set objective-number (objective-number + 1)]
+  print (word self " is changing platform from " old-objective-number " to " objective-number)
+end
+
+

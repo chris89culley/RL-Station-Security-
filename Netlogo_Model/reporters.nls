@@ -1,0 +1,85 @@
+to-report memory-security 
+  report [seen-list] of sec-id
+end 
+
+to-report current-patch-type-criminal 
+  report [patch-type] of [patch-here] of crim-id 
+end 
+
+to-report current-x-cor-criminal 
+  report [pxcor] of [patch-here] of crim-id 
+end 
+
+to-report current-y-cor-criminal 
+  report [pycor] of [patch-here] of crim-id 
+end 
+
+to-report last-objective-criminal
+  report [last-objective] of crim-id 
+end
+
+to-report last-objective-security  
+  report [last-objective] of sec-id
+end
+
+to-report last-target-criminal 
+  report [last-target] of crim-id 
+end 
+
+to-report last-target-security
+  report [last-target] of  sec-id 
+end 
+
+to-report memory-criminal
+  report [seen-list] of crim-id 
+end 
+
+to-report objective-criminal
+  report [objective] of crim-id
+end 
+
+to-report objective-security
+  report [objective] of sec-id
+end 
+
+to-report criminal-cash
+  report [money] of crim-id
+end
+
+to-report no-of-robberies-criminal 
+   report number-crim-robbed
+end 
+
+to-report target-criminal 
+  report [victim-target] of crim-id
+end
+
+to-report target-security
+  report [victim-target] of sec-id
+end
+
+to-report current-patch-type-security
+  report [patch-type] of [patch-here] of sec-id 
+end 
+
+to-report current-x-cor-security 
+  report [pxcor] of [patch-here] of sec-id 
+end 
+
+to-report current-y-cor-security 
+  report [pycor] of [patch-here] of sec-id 
+end 
+
+to-report current-platform-security 
+  report [number] of [patch-here] of sec-id 
+end 
+
+to-report current-platform-criminal
+  report [number] of [patch-here] of crim-id 
+end 
+
+
+to-report number-so-far-questioned-security
+  report number-secur-questioned
+  
+end 

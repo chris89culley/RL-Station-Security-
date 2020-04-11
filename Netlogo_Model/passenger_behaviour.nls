@@ -1,0 +1,37 @@
+to passenger_turn_movement_decision [pass p-num p-type]
+  if stopped = true [stop]
+      ifelse on_the_right_plaform self p-num p-type  [ ; if we are not at the right platform or not on a platform
+       ifelse not_at_entrance_and_want_to_leave self p-type  ; if we are on the entrance but don't want to leave
+        [move-around-randomly self]
+        [change-platform-step self]]  ; else we change to the correct platform
+       [
+        ifelse able_to_get_on_train objective-number [ ; if there is a train will let people on it
+          if (ticks > train_board_ticks )[
+        board-train self] ; get on it ]
+        
+       ][
+        if gait = "walking" [
+          try-and-find-a-place-to-sit self
+        ]
+      ]]
+    if can_exit p-num p-type[ ; if we want to exit and are on at the right exit
+      try-and-exit self p-num
+    ]
+end
+
+; high vuln = 1 low = 0 
+to decide-on-concern-level-and-whether-to-make-security-aware [pass concerned-about angles-seen-from]
+  if [breed] of concerned-about = criminals[
+  let prob  0.001 * (1 - vulnerability) + 0.001 * angles-seen-from
+  if random-float 1 < prob [
+    call-in-concern pass concerned-about
+  ]
+  ]
+end 
+
+
+to call-in-concern [pass concerned-about] 
+  increase_suspicion_level concerned-about xcor ycor 
+  print (word pass " is calling in about " concerned-about)
+
+end
